@@ -1,0 +1,2 @@
+# NOTE: Dependencies should only be added to this file if they are not available in Anaconda!
+webrtcvad==2.0.10

@@ -1,0 +1,3 @@
+.audio/**/*.wav
+**/*.pyc
+.cache/**/*.csv
