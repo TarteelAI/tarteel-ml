@@ -7,3 +7,10 @@ This repo is designed to house code related to Tarteel ML-related tasks. Specifi
 * model iteration
 * model deployment and API
 * model demos
+
+## Getting Started
+Check out `CONTRIBUTING.md` to start contributing to Tarteel-ML!
+
+
+
+
