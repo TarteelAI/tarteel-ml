@@ -12,6 +12,7 @@ certifi=2018.11.29=py36_0
 cffi=1.11.5=py36h6174b99_1
 chardet=3.0.4=py36_1
 cryptography=2.4.2=py36ha12b0ac_0
+dill=0.2.8.2=py36_0
 gast=0.2.0=py36_0
 grpcio=1.16.1=py36h044775b_1
 h5py=2.9.0=py36h3134771_0
