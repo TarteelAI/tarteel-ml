@@ -2,6 +2,9 @@
 """
 A file for creating a one-hot encoding of all characters, including madd and harakat, in Tarteel's Qur'an dataset.
 
+The output pickle file will contain an object with the one-hot encoded Qur'an, an encoding function, and a decoding
+function.
+
 Author: Hamzah Khan
 Date: Jan. 12, 2019
 """
@@ -13,7 +16,7 @@ import numpy as np
 
 from argparse import ArgumentParser
 
-parser = ArgumentParser(description='Tarteel Audio Recording Tensorizer')
+parser = ArgumentParser(description='Tarteel Arabic One Hot Encoding Generator')
 parser.add_argument('-i', '--input_json_path', type=str)
 parser.add_argument('-o', '--output_pickle_path', type=str)
 parser.add_argument('-v', '--verbose', type=bool, default=False)
@@ -29,8 +32,8 @@ NUM_KEY       = "num"
 NAME_KEY      = "name"
 BISMILLAH_KEY = "bismillah"
 
-ENCODE_KEY = "encode_fn"
-DECODE_KEY = "decode_fn"
+ENCODING_FN_KEY = "encoding_fn"
+DECODING_FN_KEY = "decoding_fn"
 
 def create_list_of_quranic_chars(quran_obj, surahs_key=SURAHS_KEY, ayahs_key=AYAHS_KEY, text_key=TEXT_KEY):
     """
@@ -187,9 +190,9 @@ def run_script(args):
 
     # Create an object with the encoding and the two functions.
     full_object = {
-        'QURAN_KEY': one_hot_quran_encoding,
-        'ENCODE_KEY': encode_char_as_one_hot,
-        'DECODE_KEY': decode_one_hot_as_string
+        QURAN_KEY: one_hot_quran_encoding,
+        ENCODING_FN_KEY: encode_char_as_one_hot,
+        DECODING_FN_KEY: decode_one_hot_as_string
     }
 
     try:
