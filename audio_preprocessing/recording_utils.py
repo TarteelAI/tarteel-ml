@@ -86,9 +86,8 @@ def get_path_to_recording_by_id(local_download_dir, surah_num, ayah_num, recordi
 
 def open_recording(path_to_audio):
     """
-    Returns a tuple (True, info_tuple) the audio at the given path has a proper wave header, where info_tuple contains
-    the audio frames, sample rate in hz, and number of channels, in that order. Returns (False, None, None, None) if the
-    header is invalid.
+    Returns a tuple (True, audio frames, sample rate in hz, number of channels) if the audio at the given path has a
+    proper wave header. Returns (False, None, None, None) if the header is invalid.
 
     Note: As of now, proper is defined as whether the wave library can open the file.
     """
