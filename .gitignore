@@ -1,3 +1,4 @@
 .audio/**/*.wav
 **/*.pyc
 .cache/**/*.csv
+**/*.pickle
