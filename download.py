@@ -31,7 +31,7 @@ parser.add_argument('--local_csv_cache', type=str, default='.cache/local.csv')
 parser.add_argument('--local_download_dir', type=str, default='.audio')
 parser.add_argument('--vad_check', type=bool, default=True)
 parser.add_argument('--verbose', type=bool, default=False)
-parser.add_argument('--sample', type=bool, default=True)
+parser.add_argument('-s', '--surah', type=int)
 args = parser.parse_args()
 
 
@@ -40,7 +40,7 @@ NO_FRAMES_VALUE = 1.0
 
 DEFAULT_NON_SPEECH_THRESHOLD_FRACTION = 0.5
 
-WEBRTCVAD_SUPPORTED_SAMPLE_RATES_HZ = [8000, 16000, 32000, 48000]
+WEBRTCVAD_SUPPORTED_SAMPLE_RATES_HZ = [8000, 16000, 32000, 44100, 48000]
 
 def download_csv_dataset():
     print("Downloading CSV from", args.csv_url)
@@ -92,7 +92,7 @@ def download_audio(row, local_download_dir):
         # If the download fails, print an error and exit the function.
         print("Audio file", local_download_path, "could not be opened.")
 
-    # Check if the wave header is valid and if so, get the desired info.
+    # Check if the wave header is valid and if so, get the desired info. This deletes files with invalid headers.
     has_valid_header, wav_bytes, sample_rate_hz, num_channels = recording_utils.open_recording(local_download_path)
 
     if has_valid_header:
@@ -108,6 +108,11 @@ def download_audio(row, local_download_dir):
             print("Audio file", local_download_path, "does not have speech according to VAD. Removing.")
             os.remove(local_download_path)
 
+    if sample_rate_hz not in WEBRTCVAD_SUPPORTED_SAMPLE_RATES_HZ and sample_rate_hz != None:
+        # If unsupported sample frequency, remove the file.
+        print("File ", local_download_path, " has an unsupported sample frequency %d. Removing." % sample_rate_hz)
+        if os.path.exists(local_download_path):
+            os.remove(local_download_path)
 
 if __name__ == "__main__":
 
@@ -119,7 +124,7 @@ if __name__ == "__main__":
     rows = parse_csv()
 
     for row in rows:
-        if row[0] == "1":
+        if row[0] == str(args.surah):
             sample_rate_hz = download_audio(row, args.local_download_dir)
         # else:
         #     download_audio(row)

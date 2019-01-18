@@ -13,6 +13,7 @@ import webrtcvad
 DEFAULT_NON_SPEECH_THRESHOLD_FRACTION = 0.5
 ALL_SURAHS = None
 NUM_SURAHS = 114
+NO_FRAMES_VALUE = 1.0
 
 def get_paths_to_all_recordings(local_download_dir):
     """
@@ -103,7 +104,10 @@ def open_recording(path_to_audio):
     # If wave can not load the file, print an error and exit the function.
     except wave.Error:
         print("Invalid wave header found", path_to_audio, ", removing.")
-        os.remove(path_to_audio)
+
+        if os.path.exists(path_to_audio):
+            os.remove(path_to_audio)
+
         return (False, None, None, None)
 
 def has_speech(wav_bytes, 

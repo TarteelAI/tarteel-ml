@@ -4,7 +4,9 @@ A file for preprocessing audio recordings from tarteel.io for input into
 TensorFlow models.
 
 Filter bank and MFCC background referenced from
-[1] https://haythamfayek.com/2016/04/21/speech-processing-for-machine-learning.html.
+[1] https://haythamfayek.com/2016/04/21/speech-processing-for-machine-learning.html
+and
+http://www.practicalcryptography.com/miscellaneous/machine-learning/guide-mel-frequency-cepstral-coefficients-mfccs/.
 
 Tensorflow implementation details inspired by API at
 https://www.tensorflow.org/api_guides/python/contrib.signal.
@@ -16,6 +18,7 @@ Date: Jan. 12, 2019
 import functools
 import json
 import numpy as np
+import os
 import recording_utils
 import scipy.io.wavfile
 import tensorflow as tf
@@ -34,7 +37,7 @@ OUTPUT_LOG_MEL_FILTER_BANK = "log_mel_filter_bank"
 # Set up parameters.
 parser = ArgumentParser(description='Tarteel Audio Recording Tensorizer')
 parser.add_argument('-f', '--format', help="Valid options are 'mfcc' or 'mel_filter_bank'.")
-parser.add_argument('-o', '--output_path', type=str, default='.outputs', help="A path to an output file.")
+parser.add_argument('-o', '--output_dir', type=str, default='.outputs', help="A path to an output directory.")
 parser.add_argument('-s', '--surah', type=int, help="Select an integer in [1, 114] to specify surahs with recordings" \
                                                     "to tensorize. None downloads all surahs.", default=ALL_SURAHS)
 parser.add_argument('-a', '--ayah', type=int, help="Select an integer to specify an ayah in the surah with recordings" \
@@ -191,6 +194,7 @@ def generate_features(args):
         paths_to_tensorize = recording_utils.get_paths_to_ayah_recordings(args.local_download_dir, [ayah])
 
     # Generate the desired feature and calculate the features.
+    output = None
     for recording_path in paths_to_tensorize:
         sample_rate_hz, signal = scipy.io.wavfile.read(recording_path)
 
@@ -199,10 +203,25 @@ def generate_features(args):
         else:
             if(bool(args.verbose)):
                 print('Unsupported sampling frequency for recording at path %s: %d.' % (recording_path, sample_rate_hz))
-    
-    print(output)
+            continue
 
-    # Save the outputs to their own file(s).
+        # Save the outputs to their own file(s).
+        path1, base_filename = os.path.split(recording_path)
+        filename, _          = os.path.splitext(base_filename)
+        filename             += '.txt'
+
+        path2, ayah_folder   = os.path.split(path1)
+        _, surah_folder      = os.path.split(path2)
+
+        # Join the directory, metric type, surah number, ayah number, and filename (with new extension).
+        save_dir = os.path.join(args.output_dir, args.format, surah_folder, ayah_folder)
+
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+            
+        save_path = os.path.join(save_dir, filename)
+        output_np_array = tf.Session().run(output)
+        np.savetxt(save_path, np.squeeze(output_np_array))
 
 
 
