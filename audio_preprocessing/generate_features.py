@@ -51,7 +51,7 @@ args = parser.parse_args()
 # Define constants.
 
 # Unsupported sampling frequencies.
-SUPPORTED_FREQUENCIES = [8000, 16000, 32000, 48000]
+SUPPORTED_FREQUENCIES = [8000, 16000, 32000, 44100, 48000]
 
 # Select a pre_emphasis coefficient. 
 """
@@ -139,8 +139,6 @@ def generate_mel_filter_banks(signal, sample_rate_hz, frame_size_s=FRAME_SIZE_S,
     mel_spectrograms = tf.tensordot(magnitude_spectrograms, linear_to_mel_weight_matrix, 1)
     mel_spectrograms.set_shape(magnitude_spectrograms.shape[:-1].concatenate(linear_to_mel_weight_matrix.shape[-1:]))
 
-    print('frame_length', frame_length, 'frame_step', frame_step, 'mel_spectrogram shape', mel_spectrograms.shape)
-
     if should_log_weight:
         return tf.log(mel_spectrograms + log_offset)
     else:
@@ -218,7 +216,7 @@ def generate_features(args):
             # Save the outputs to their own file(s).
             path1, base_filename = os.path.split(recording_path)
             filename, _          = os.path.splitext(base_filename)
-            
+
             path2, ayah_folder   = os.path.split(path1)
             _, surah_folder      = os.path.split(path2)
 
