@@ -3,3 +3,4 @@
 .audio/**/*.wav
 .cache/**/*.csv
 .outputs/
+audio_preprocessing/.ipynb_checkpoints/**

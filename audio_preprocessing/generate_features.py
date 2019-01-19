@@ -110,7 +110,7 @@ def generate_mel_filter_banks(signal, sample_rate_hz, frame_size_s=FRAME_SIZE_S,
     upper_freq_hz = sample_rate_hz / 2.0
 
     # Package the signal into equally-sized, overlapping subsequences (padded with 0s if necessary).
-    frames = tf_signal.frame(signal, frame_length, frame_step, pad_end=True, pad_value=0)
+    frames = tf_signal.frame(signal, frame_length=frame_length, frame_step=frame_step, pad_end=True, pad_value=0)
 
     # Apply a Short-Term Fourier Transform (STFT) to convert into the frequency domain (assuming each window has a
     # constant frequency snapshot).
@@ -125,18 +125,21 @@ def generate_mel_filter_banks(signal, sample_rate_hz, frame_size_s=FRAME_SIZE_S,
     power_spectograms = tf.real(stfts * tf.conj(stfts))
 
     # Warp the linear-scale spectrograms into the mel-scale.
-    num_spectrogram_bins = magnitude_spectrograms.shape[-1].value
+    num_spectrogram_bins = 1 + int(fft_num_points/2)
 
     # Compute the conversion matrix to mel-frequency space.
-    linear_to_mel_weight_matrix = tf.contrib.signal.linear_to_mel_weight_matrix(num_mel_bins,
-                                                                                num_spectrogram_bins,
-                                                                                sample_rate_hz,
-                                                                                lower_freq_hz,
-                                                                                upper_freq_hz)
+    linear_to_mel_weight_matrix = tf.contrib.signal.linear_to_mel_weight_matrix(num_mel_bins=num_mel_bins,
+                                                                                num_spectrogram_bins=num_spectrogram_bins,
+                                                                                sample_rate=sample_rate_hz,
+                                                                                lower_edge_hertz=lower_freq_hz,
+                                                                                upper_edge_hertz=upper_freq_hz,
+                                                                                dtype=tf.float32)
 
     # Apply the conversion to complete the calculation of the filter-bank
     mel_spectrograms = tf.tensordot(magnitude_spectrograms, linear_to_mel_weight_matrix, 1)
     mel_spectrograms.set_shape(magnitude_spectrograms.shape[:-1].concatenate(linear_to_mel_weight_matrix.shape[-1:]))
+
+    print('frame_length', frame_length, 'frame_step', frame_step, 'mel_spectrogram shape', mel_spectrograms.shape)
 
     if should_log_weight:
         return tf.log(mel_spectrograms + log_offset)
@@ -193,35 +196,44 @@ def generate_features(args):
         ayah = (args.surah, args.ayah)
         paths_to_tensorize = recording_utils.get_paths_to_ayah_recordings(args.local_download_dir, [ayah])
 
-    # Generate the desired feature and calculate the features.
-    output = None
-    for recording_path in paths_to_tensorize:
-        sample_rate_hz, signal = scipy.io.wavfile.read(recording_path)
 
-        if sample_rate_hz in SUPPORTED_FREQUENCIES: 
-            output = feature_gen_fn(signal, sample_rate_hz)
-        else:
-            if(bool(args.verbose)):
-                print('Unsupported sampling frequency for recording at path %s: %d.' % (recording_path, sample_rate_hz))
-            continue
+    # Start a TensorFlow Session.
 
-        # Save the outputs to their own file(s).
-        path1, base_filename = os.path.split(recording_path)
-        filename, _          = os.path.splitext(base_filename)
-        filename             += '.txt'
+    with tf.Session() as sess:
+        # Generate the desired feature and calculate the features.
+        output = None
+        for recording_path in paths_to_tensorize:
+            sample_rate_hz, signal = scipy.io.wavfile.read(recording_path)
 
-        path2, ayah_folder   = os.path.split(path1)
-        _, surah_folder      = os.path.split(path2)
+            # Transpose the signal in order to make the 0th axis over the channels of the audio.
+            signal = signal.transpose()
 
-        # Join the directory, metric type, surah number, ayah number, and filename (with new extension).
-        save_dir = os.path.join(args.output_dir, args.format, surah_folder, ayah_folder)
+            if sample_rate_hz in SUPPORTED_FREQUENCIES: 
+                output = feature_gen_fn(signal, sample_rate_hz)
+            else:
+                if(bool(args.verbose)):
+                    print('Unsupported sampling frequency for recording at path %s: %d.' % (recording_path, sample_rate_hz))
+                continue
 
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
+            # Save the outputs to their own file(s).
+            path1, base_filename = os.path.split(recording_path)
+            filename, _          = os.path.splitext(base_filename)
             
-        save_path = os.path.join(save_dir, filename)
-        output_np_array = tf.Session().run(output)
-        np.savetxt(save_path, np.squeeze(output_np_array))
+            path2, ayah_folder   = os.path.split(path1)
+            _, surah_folder      = os.path.split(path2)
+
+            # Join the directory, metric type, surah number, ayah number, and filename (with new extension).
+            save_dir = os.path.join(args.output_dir, args.format, surah_folder, ayah_folder)
+
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
+                
+            save_path = os.path.join(save_dir, filename)
+            output_np_array = tf.Session().run(output)
+            np.save(save_path, output_np_array)
+
+        # Close the session.
+        sess.close()
 
 
 

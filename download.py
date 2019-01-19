@@ -97,14 +97,14 @@ def download_audio(row, local_download_dir):
 
     if has_valid_header:
         # Note: webrtcVAD does not currently support 44.1MHz, so we have no way of checking those files for empty audio.
-        recording_lacks_speech = recording_utils.has_speech(
+        recording_has_speech = recording_utils.has_speech(
             wav_bytes, 
             sample_rate_hz, 
             num_channels, 
             non_speech_threshold_fraction=DEFAULT_NON_SPEECH_THRESHOLD_FRACTION, 
             verbose=args.verbose)
 
-        if args.vad_check and sample_rate_hz in WEBRTCVAD_SUPPORTED_SAMPLE_RATES_HZ and recording_lacks_speech:
+        if args.vad_check and sample_rate_hz in WEBRTCVAD_SUPPORTED_SAMPLE_RATES_HZ and not recording_has_speech:
             print("Audio file", local_download_path, "does not have speech according to VAD. Removing.")
             os.remove(local_download_path)
 
