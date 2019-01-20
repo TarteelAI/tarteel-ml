@@ -28,7 +28,7 @@ parser.add_argument('--csv_url', type=str, default=TARTEEL_V1_CSV_URL)
 parser.add_argument('--local_csv_cache', type=str, default='.cache/local.csv')
 parser.add_argument('--local_download_dir', type=str, default='.audio')
 parser.add_argument('--vad_check', type=bool, default=True)
-parser.add_argument('--verbose', type=bool, default=False)
+parser.add_argument('-v', '--verbose', type=bool, default=False)
 parser.add_argument('-s', '--surah', type=int)
 args = parser.parse_args()
 
