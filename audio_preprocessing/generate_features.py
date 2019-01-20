@@ -194,44 +194,44 @@ def generate_features(args):
         ayah = (args.surah, args.ayah)
         paths_to_tensorize = recording_utils.get_paths_to_ayah_recordings(args.local_download_dir, [ayah])
 
-
-    # Start a TensorFlow Session.
-
-    with tf.Session() as sess:
         # Generate the desired feature and calculate the features.
         output = None
         for recording_path in paths_to_tensorize:
-            sample_rate_hz, signal = scipy.io.wavfile.read(recording_path)
 
-            # Transpose the signal in order to make the 0th axis over the channels of the audio.
-            signal = signal.transpose()
+            # Start a TensorFlow Session.
+            # Note that encapsulating the loop in a session will result in exorbitant memory demands on large audiosets.
+            with tf.Session() as sess:
+                sample_rate_hz, signal = scipy.io.wavfile.read(recording_path)
 
-            if sample_rate_hz in SUPPORTED_FREQUENCIES: 
-                output = feature_gen_fn(signal, sample_rate_hz)
-            else:
-                if(bool(args.verbose)):
-                    print('Unsupported sampling frequency for recording at path %s: %d.' % (recording_path, sample_rate_hz))
-                continue
+                # Transpose the signal in order to make the 0th axis over the channels of the audio.
+                signal = signal.transpose()
 
-            # Save the outputs to their own file(s).
-            path1, base_filename = os.path.split(recording_path)
-            filename, _          = os.path.splitext(base_filename)
+                if sample_rate_hz in SUPPORTED_FREQUENCIES: 
+                    output = feature_gen_fn(signal, sample_rate_hz)
+                else:
+                    if(bool(args.verbose)):
+                        print('Unsupported sampling frequency for recording at path %s: %d.' % (recording_path, sample_rate_hz))
+                    continue
 
-            path2, ayah_folder   = os.path.split(path1)
-            _, surah_folder      = os.path.split(path2)
+                # Save the outputs to their own file(s).
+                path1, base_filename = os.path.split(recording_path)
+                filename, _          = os.path.splitext(base_filename)
 
-            # Join the directory, metric type, surah number, ayah number, and filename (with new extension).
-            save_dir = os.path.join(args.output_dir, args.format, surah_folder, ayah_folder)
+                path2, ayah_folder   = os.path.split(path1)
+                _, surah_folder      = os.path.split(path2)
 
-            if not os.path.exists(save_dir):
-                os.makedirs(save_dir)
-                
-            save_path = os.path.join(save_dir, filename)
-            output_np_array = tf.Session().run(output)
-            np.save(save_path, output_np_array)
+                # Join the directory, metric type, surah number, ayah number, and filename (with new extension).
+                save_dir = os.path.join(args.output_dir, args.format, surah_folder, ayah_folder)
 
-        # Close the session.
-        sess.close()
+                if not os.path.exists(save_dir):
+                    os.makedirs(save_dir)
+                    
+                save_path = os.path.join(save_dir, filename)
+                output_np_array = tf.Session().run(output)
+                np.save(save_path, output_np_array)
+
+                # Close the session.
+                sess.close()
 
 
 
