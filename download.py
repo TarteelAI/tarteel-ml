@@ -19,9 +19,7 @@ from urllib.parse import urlparse
 from argparse import ArgumentParser
 
 # Define argument constants.
-TARTEEL_V1_CSV_URL = "https://www.tarteel.io/tarteel_v1.0.csv"
-# TODO(khanh111) Remove once tarteel.io dataset download bug is fixed.
-TARTEEL_V1_CSV_URL = "https://raw.githubusercontent.com/Tarteel-io/tarteel.io/master/audio/static/datasets/tarteel_v1.0.csv"
+TARTEEL_V1_CSV_URL = "https://www.tarteel.io/static/datasets/tarteel_v1.0.csv"
 TARTEEL_LIVE_CSV_URL = "https://www.tarteel.io/download-full-dataset-csv"
 
 
