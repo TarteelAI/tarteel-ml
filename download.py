@@ -89,6 +89,7 @@ def download_audio(row, local_download_dir):
     except:
         # If the download fails, print an error and exit the function.
         print("Audio file", local_download_path, "could not be opened.")
+        return
 
     # Check if the wave header is valid and if so, get the desired info. This deletes files with invalid headers.
     has_valid_header, wav_bytes, sample_rate_hz, num_channels = recording_utils.open_recording(local_download_path)
