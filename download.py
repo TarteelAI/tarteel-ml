@@ -68,7 +68,7 @@ def download_audio(row, local_download_dir):
     """
     surah_num = int(row[0])
     ayah_num = int(row[1])
-    url = "http://" + row[2]
+    url = row[2]
     parsed_url = urlparse(url)
     wav_filename = os.path.basename(parsed_url.path)
     local_download_path = recording_utils.get_path_to_recording(local_download_dir, surah_num, ayah_num, wav_filename)
