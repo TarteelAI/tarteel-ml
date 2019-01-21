@@ -139,8 +139,6 @@ def generate_mel_filter_banks(signal, sample_rate_hz, frame_size_s=FRAME_SIZE_S,
     mel_spectrograms = tf.tensordot(magnitude_spectrograms, linear_to_mel_weight_matrix, 1)
     mel_spectrograms.set_shape(magnitude_spectrograms.shape[:-1].concatenate(linear_to_mel_weight_matrix.shape[-1:]))
 
-    print('frame_length', frame_length, 'frame_step', frame_step, 'mel_spectrogram shape', mel_spectrograms.shape)
-
     if should_log_weight:
         return tf.log(mel_spectrograms + log_offset)
     else:
