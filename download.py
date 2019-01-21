@@ -38,7 +38,7 @@ NO_FRAMES_VALUE = 1.0
 
 DEFAULT_NON_SPEECH_THRESHOLD_FRACTION = 0.5
 
-WEBRTCVAD_SUPPORTED_SAMPLE_RATES_HZ = [8000, 16000, 32000, 44100, 48000]
+WEBRTCVAD_SUPPORTED_SAMPLE_RATES_HZ = [8000, 16000, 32000, 48000]
 
 def download_csv_dataset():
     print("Downloading CSV from", args.csv_url)
@@ -107,11 +107,12 @@ def download_audio(row, local_download_dir):
             print("Audio file", local_download_path, "does not have speech according to VAD. Removing.")
             os.remove(local_download_path)
 
-    if sample_rate_hz not in WEBRTCVAD_SUPPORTED_SAMPLE_RATES_HZ and sample_rate_hz != None:
+    if sample_rate_hz not in WEBRTCVAD_SUPPORTED_SAMPLE_RATES_HZ+[44100] and sample_rate_hz != None:
         # If unsupported sample frequency, remove the file.
         print("File ", local_download_path, " has an unsupported sample frequency %d. Removing." % sample_rate_hz)
         if os.path.exists(local_download_path):
             os.remove(local_download_path)
+
 
 if __name__ == "__main__":
 
