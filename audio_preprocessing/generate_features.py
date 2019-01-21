@@ -139,6 +139,8 @@ def generate_mel_filter_banks(signal, sample_rate_hz, frame_size_s=FRAME_SIZE_S,
     mel_spectrograms = tf.tensordot(magnitude_spectrograms, linear_to_mel_weight_matrix, 1)
     mel_spectrograms.set_shape(magnitude_spectrograms.shape[:-1].concatenate(linear_to_mel_weight_matrix.shape[-1:]))
 
+    print('frame_length', frame_length, 'frame_step', frame_step, 'mel_spectrogram shape', mel_spectrograms.shape)
+
     if should_log_weight:
         return tf.log(mel_spectrograms + log_offset)
     else:
@@ -204,6 +206,7 @@ def generate_features(args):
 
             # If the signal is not long enough (i.e. as big as the frame_size), then skip the file.
             if signal.shape[0] < int(FRAME_SIZE_S * sample_rate_hz):
+                print(f'Recording at path {recording_path} is not long enough.')
                 continue
 
             # Transpose the signal in order to make the 0th axis over the channels of the audio.
