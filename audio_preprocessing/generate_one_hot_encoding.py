@@ -32,8 +32,10 @@ NUM_KEY       = "num"
 NAME_KEY      = "name"
 BISMILLAH_KEY = "bismillah"
 
-ENCODING_FN_KEY = "encoding_fn"
-DECODING_FN_KEY = "decoding_fn"
+ENCODING_MAP_KEY = "encoding_map"
+DECODING_MAP_KEY = "decoding_map"
+CHAR_TO_INT_MAP_KEY = "char_to_int"
+INT_TO_CHAR_MAP_KEY = "int_to_char"
 
 def create_list_of_quranic_chars(quran_obj, surahs_key=SURAHS_KEY, ayahs_key=AYAHS_KEY, text_key=TEXT_KEY):
     """
@@ -73,30 +75,28 @@ def create_one_hot_encoding(quranic_char_list):
     char_to_int = dict((c, i) for i, c in enumerate(quranic_char_list))
     int_to_char = dict((i, c) for i, c in enumerate(quranic_char_list))
 
-    num_chars_in_alphabet = len(quranic_char_list)
-
-    def encode_char_as_one_hot(string):
+    def encode_char_as_one_hot(string, char_to_int):
         """
         Converts a string of characters from our alphabet into a one_hot encoded string.
         """
         str_len = len(string)
         int_list = np.array([char_to_int[char] for char in string])
 
-        one_hot_string = np.zeros((str_len, num_chars_in_alphabet))
+        one_hot_string = np.zeros((str_len, len(char_to_int)))
         one_hot_string[np.arange(str_len), int_list] = 1
 
         return one_hot_string
 
-    def decode_one_hot_as_string(one_hot_string):
+    def decode_one_hot_as_string(one_hot_string, int_to_char):
         """
         Converts a one_hot encoded numpy array back into a string of characters from our alphabet.
         """
-        int_list = list(np.argmax(one_hot_string, axis=0))
+        int_list = list(np.argmax(one_hot_string, axis=1))
         char_list = [int_to_char[integer] for integer in int_list]
 
         return str(char_list)
 
-    return encode_char_as_one_hot, decode_one_hot_as_string
+    return char_to_int, int_to_char, encode_char_as_one_hot, decode_one_hot_as_string
 
 
 def generate_a_one_hot_encoded_script(quran_obj,
@@ -176,7 +176,10 @@ def run_script(args):
         print(quranic_char_list, ' has ', len(quranic_char_list), ' characters.')
 
     # Create the one-hot encodings.
-    encode_char_as_one_hot, decode_one_hot_as_string = create_one_hot_encoding(quranic_char_list)
+    char_to_int_map, \
+    int_to_char_map, \
+    encode_char_as_one_hot, \
+    decode_one_hot_as_string = create_one_hot_encoding(quranic_char_list)
 
     if args.verbose:
         print("encode!")
@@ -186,13 +189,17 @@ def run_script(args):
         print(decode_one_hot_as_string(x))
 
     # Generate the Qur'anic text in one-hot encoding.
-    one_hot_quran_encoding = generate_a_one_hot_encoded_script(quran_obj, encode_char_as_one_hot)
+    one_hot_quran_encoding = generate_a_one_hot_encoded_script(
+        quran_obj,
+        lambda string: encode_char_as_one_hot(string, char_to_int_map))
 
     # Create an object with the encoding and the two functions.
     full_object = {
         QURAN_KEY: one_hot_quran_encoding,
-        ENCODING_FN_KEY: encode_char_as_one_hot,
-        DECODING_FN_KEY: decode_one_hot_as_string
+        ENCODING_MAP_KEY: encode_char_as_one_hot,
+        DECODING_MAP_KEY: decode_one_hot_as_string,
+        CHAR_TO_INT_MAP_KEY: char_to_int_map,
+        INT_TO_CHAR_MAP_KEY: int_to_char_map
     }
 
     try:

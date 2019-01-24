@@ -10,7 +10,7 @@ backcall=0.1.0=py36_0
 blas=1.0=mkl
 bleach=3.1.0=py36_0
 c-ares=1.15.0=h1de35cc_1
-ca-certificates=2018.03.07=0
+ca-certificates=2018.12.5=0
 certifi=2018.11.29=py36_0
 cffi=1.11.5=py36h6174b99_1
 chardet=3.0.4=py36_1
@@ -88,6 +88,7 @@ qt=5.9.7=h468cd18_1
 qtconsole=4.4.3=py36_0
 readline=7.0=h1de35cc_5
 requests=2.21.0=py36_0
+scikit-learn=0.20.2=py36h27c97d8_0
 scipy=1.1.0=py36h1410ff5_2
 send2trash=1.5.0=py36_0
 setuptools=40.6.3=py36_0
