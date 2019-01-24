@@ -110,6 +110,13 @@ def open_recording(path_to_audio):
 
         return (False, None, None, None)
 
+def open_feature_file(path_to_audio):
+    """
+    Opens and returns the .npy file at the passed in path and returns a numpy ndarray of the feature in question and
+    processes it.
+    """
+    return np.load(path_to_audio)
+
 def has_speech(wav_bytes, 
                sample_rate_hz, 
                num_channels, 
