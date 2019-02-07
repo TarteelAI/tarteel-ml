@@ -19,7 +19,7 @@ from urllib.parse import urlparse
 from argparse import ArgumentParser
 
 # Define argument constants.
-TARTEEL_V1_CSV_URL = "https://www.tarteel.io/static/datasets/tarteel_v1.0.csv"
+TARTEEL_V1_CSV_URL = "https://api.tarteel.io/static/datasets/tarteel_v1.0.csv"
 TARTEEL_LIVE_CSV_URL = "https://www.tarteel.io/download-full-dataset-csv"
 
 
