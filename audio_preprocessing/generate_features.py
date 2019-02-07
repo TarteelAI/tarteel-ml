@@ -189,11 +189,14 @@ def generate_features(args):
         surahs_to_tensorize = np.arange(NUM_SURAHS) + 1
 
     if not args.ayah:
+        print(surahs_to_tensorize)
         paths_to_tensorize = recording_utils.get_paths_to_surah_recordings(args.local_download_dir, surahs_to_tensorize)
+        print('hi')
     else:
         ayah = (args.surah, args.ayah)
         paths_to_tensorize = recording_utils.get_paths_to_ayah_recordings(args.local_download_dir, [ayah])
 
+    print(paths_to_tensorize)
     # Generate the desired feature and calculate the features.
     output = None
     for recording_path in paths_to_tensorize:

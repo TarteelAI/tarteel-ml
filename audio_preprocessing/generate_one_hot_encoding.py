@@ -159,15 +159,15 @@ def run_script(args):
     """
     Runs the script to find all characters, generate the encoding, and translate and store it in the output file.
     """
-    try:
-        with open(args.input_json_path) as quran_json_file:
+    # try:
+    with open(args.input_json_path, 'rb') as quran_json_file:
 
-            # Import json file.
-            quran_obj = json.load(quran_json_file)[QURAN_KEY]
-
-    except:
-        print("Json file failed to open. Exiting script...")
-        return
+        # Import json file.
+        quran_obj = json.load(quran_json_file)[QURAN_KEY]
+    #
+    # except:
+    #     print("Json file failed to open. Exiting script...")
+    #     return
 
     # Get the list of every character in the Qur'an.
     quranic_char_list = create_list_of_quranic_chars(quran_obj)
@@ -202,12 +202,8 @@ def run_script(args):
         INT_TO_CHAR_MAP_KEY: int_to_char_map
     }
 
-    try:
-        with open(args.output_pickle_path, 'wb') as one_hot_quran_pickle_file:
-            pickle.dump(full_object, one_hot_quran_pickle_file)
-    except:
-        print("One-hot Pickle file failed to save. Exiting script...")
-        return
+    with open(args.output_pickle_path, 'wb') as one_hot_quran_pickle_file:
+        pickle.dump(full_object, one_hot_quran_pickle_file)
 
 def load_data(pickle_file):
     """

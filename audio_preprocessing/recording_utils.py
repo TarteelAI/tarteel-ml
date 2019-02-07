@@ -8,7 +8,11 @@ Date: Jan. 13, 2019
 import numpy as np
 import os
 import wave
-import webrtcvad
+try:
+    import webrtcvad
+except ImportError:
+    print("Warning: webrtcvad could not be imported, may cause errors.")
+
 
 DEFAULT_NON_SPEECH_THRESHOLD_FRACTION = 0.5
 ALL_SURAHS = None
@@ -26,13 +30,12 @@ def get_paths_to_surah_recordings(local_download_dir, surahs=ALL_SURAHS):
     Returns a list of paths, in the given directory, to recordings of ayahs in the specified surahs.
     """
     paths_to_audio = []
-
+    if not os.path.isdir(local_download_dir):
+        raise OSError('Local download directory {} not found'.format(local_download_dir))
     if not surahs:
         surahs = 1 + np.arange(NUM_SURAHS)
-
     for surah_num in surahs:
         local_surah_dir = os.path.join(local_download_dir, "s" + str(surah_num))
-
         for _, ayah_directories, _ in os.walk(local_surah_dir):
             for ayah_directory in ayah_directories:
                 local_ayah_dir = os.path.join(local_surah_dir, ayah_directory)
