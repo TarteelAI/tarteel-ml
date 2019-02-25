@@ -3,5 +3,7 @@
 **/*.pyc
 .audio/**/*.wav
 .cache/**/*.csv
+.idea/
 .outputs/
 audio_preprocessing/.ipynb_checkpoints/**
+
