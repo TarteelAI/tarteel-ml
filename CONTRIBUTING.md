@@ -17,8 +17,7 @@ our instructions assume you use it to. You can download it at this
 Once you have installed Anaconda and verified it is being used, download and `cd` into the
 Tarteel-ML repository and run the following commands to install all dependencies.
 ```commandline
-conda env create -f requirements.txt tarteel
-pip install -r pip_only_requirements.txt
+conda env create -f environment.yml
 ```
 
 After this, activate the `tarteel` environment.
@@ -38,11 +37,8 @@ Use the `conda install` command to add any new dependencies and ensure that the 
 resolves. Pull requests with new dependencies that break the existing environment for others will be
 rejected.
 
-After adding your new dependencies in Anaconda, run the following command to generate the new
-`requirements.txt` file.
-```
-conda list -e > requirements.txt
-```
+After adding your new dependencies in Anaconda, add it (with the version number) in `environment.yml`
+under `dependencies`.
 
 #### What if the dependency I want to add isn't in Anaconda?
 For any dependencies not present in Anaconda, there is a way to install with `pip`, the default
@@ -52,7 +48,7 @@ which pip
 ```
 ensure that your pip binary is the one installed by Anaconda (the output of the command should be
 similar to `/anaconda3/envs/tarteel/bin/pip`). You should then `pip install` the library and add it
-to the file `pip_only_requirements.txt`.
+to the file `environment.yml` under `pip:`.
 
 
 ### Conventions
