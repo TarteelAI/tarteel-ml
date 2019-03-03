@@ -1,5 +1,5 @@
 """
-Contains helper methods that are used to train Tarteel ML models
+Contains helper methods that are used to train and infer Tarteel ML models
 """
 import dill as pickle
 import numpy as np
