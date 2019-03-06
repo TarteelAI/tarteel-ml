@@ -23,6 +23,7 @@ import recording_utils
 import scipy.io.wavfile
 import tensorflow as tf
 from tensorflow.contrib import signal as tf_signal
+from pyAudioAnalysis import audioFeatureExtraction
 
 from argparse import ArgumentParser
 
@@ -33,10 +34,11 @@ NUM_SURAHS = 114
 OUTPUT_MFCC = "mfcc"
 OUTPUT_MEL_FILTER_BANK = "mel_filter_bank"
 OUTPUT_LOG_MEL_FILTER_BANK = "log_mel_filter_bank"
+OUTPUT_STFEATURE = "short_term_features"
 
 # Set up parameters.
 parser = ArgumentParser(description='Tarteel Audio Recording Tensorizer')
-parser.add_argument('-f', '--format', help="Valid options are 'mfcc' or 'mel_filter_bank'.")
+parser.add_argument('-f', '--format', help="Valid options are 'mfcc' or 'mel_filter_bank' or 'short_term_features'.")
 parser.add_argument('-o', '--output_dir', type=str, default='.outputs', help="A path to an output directory.")
 parser.add_argument('-s', '--surah', type=int, help="Select an integer in [1, 114] to specify surahs with recordings" \
                                                     "to tensorize. None downloads all surahs.", default=ALL_SURAHS)
@@ -167,6 +169,19 @@ def generate_mfcc(signal, sample_rate_hz, num_mfccs=NUM_MFCCS, frame_size_s=FRAM
 
     return tf_signal.mfccs_from_log_mel_spectrograms(log_mel_filter_banks)[..., :num_mfccs]
 
+"""
+Calculate a number (34) of short-term features for the given signal. Details can be
+found on https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
+"""
+def generate_stfeatures(signal, sample_rate_hz, frame_size_s=FRAME_SIZE_S, frame_stride_s=FRAME_STRIDE_S):
+    signal = np.transpose(signal)
+    # Remove one of the channels - stFeatureExtraction only extracts features from a single channel
+    signal = signal[:,1]
+    features, feature_names = audioFeatureExtraction.stFeatureExtraction(signal, sample_rate_hz,
+                                                                         frame_size_s*sample_rate_hz,
+                                                                         frame_stride_s*sample_rate_hz)
+    return tf.convert_to_tensor(features)
+
 def generate_features(args):
     """
     Generate the desired features using this script.
@@ -178,6 +193,8 @@ def generate_features(args):
         feature_gen_fn = generate_log_mel_filter_banks
     elif(args.format == OUTPUT_MFCC):
         feature_gen_fn = generate_mfcc
+    elif(args.format == OUTPUT_STFEATURE):
+        feature_gen_fn = generate_stfeatures
     else:
         raise ValueError('--format was passed an invalid value.')
 
