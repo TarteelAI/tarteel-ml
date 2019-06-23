@@ -10,14 +10,17 @@ from architectures.seq2seq import *
 from utils import *
 import os
 import time
-
+import mlflow
+import mlflow.keras
 
 parser = ArgumentParser(description='Tarteel Train Sequence-Sequence Model')
 parser.add_argument('-b', '--batch_size', type=int, help="batch size for training", default=20)
 parser.add_argument('-e', '--epochs', type=int, default=100)
 parser.add_argument('-o', '--output_dir', type=str, default='.outputs/')
 parser.add_argument('-l', '--learning_rate', type=float, default=0.01)
+parser.add_argument('-n', '--num_train', type=int, default=100)
 parser.add_argument('-p', '--num_predict', type=int, default=5)
+parser.add_argument('-d', '--latent_dim', type=int, default=20)
 args = parser.parse_args()
 
 
@@ -28,13 +31,15 @@ def train_recitation_to_text(args):
     :return:
     """
     time_of_experiment = time.time()  # Saves the time experiment started, useful for timestamping output files.
-    latent_dim = 20  # Latent dimensionality of the encoding space.
-    encoder_input_data, decoder_input_data, decoder_target_data = get_seq2seq_data()
+    latent_dim = args.latent_dim  # Latent dimensionality of the encoding space.
+    encoder_input_data, decoder_input_data, decoder_target_data = get_seq2seq_data(n=args.num_train)
 
-    max_encoder_seq_length = encoder_input_data.shape[1]
     max_decoder_seq_length = decoder_input_data.shape[1]
     num_encoder_tokens = encoder_input_data.shape[-1]
     num_decoder_tokens = decoder_input_data.shape[-1]
+
+    print("Audio data shape:", encoder_input_data.shape)
+    print("Text data shape:", decoder_target_data.shape)
 
     # Get the model for training
     encoder_inputs, encoder_states, decoder_inputs, decoder_lstm, decoder_dense, model = \
@@ -45,10 +50,17 @@ def train_recitation_to_text(args):
     model.summary()
 
     # Train the model
-    history = model.fit([encoder_input_data, decoder_input_data], decoder_target_data,
-                        batch_size=args.batch_size,
-                        epochs=args.epochs,
-                        validation_split=0.2)
+    with mlflow.start_run():
+        history = model.fit([encoder_input_data, decoder_input_data], decoder_target_data,
+                            batch_size=args.batch_size,
+                            epochs=args.epochs,
+                            validation_split=0.2)
+        mlflow.log_param("batch_size", args.batch_size)
+        mlflow.log_param("epochs", args.epochs)
+        mlflow.log_param("learning_rate", args.learning_rate)
+        mlflow.log_metric("loss", history.history['loss'][-1])
+        mlflow.log_metric("val_loss", history.history['val_loss'][-1])
+        mlflow.keras.log_model(model, "model")
 
     # Save training history
     plt.plot(range(args.epochs), history.history['loss'], label='Training')
