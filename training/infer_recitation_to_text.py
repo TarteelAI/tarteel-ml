@@ -13,7 +13,7 @@ import numpy as np
 parser = ArgumentParser(description='Tarteel Train Sequence-Sequence Model')
 parser.add_argument('-o', '--output_dir', type=str, help="directory with saved model", default='.outputs/')
 parser.add_argument('-f', '--filename_prefix', type=str, help="prefix of the saved models")
-parser.add_argument('-p', '--num_predict', type=int, default=-1)
+parser.add_argument('-p', '--num_predict', type=int, default=100)
 args = parser.parse_args()
 
 
@@ -23,7 +23,7 @@ def infer_recitation_to_text(args):
     encoder_model = tf.keras.models.load_model(os.path.join(args.output_dir, f'encoder_model-{prefix}.h5'))
     print("Models loaded")
 
-    encoder_input_data, decoder_input_data, decoder_target_data = get_seq2seq_data()
+    encoder_input_data, decoder_input_data, decoder_target_data = get_seq2seq_data(n=args.num_predict)
     print("Data loaded")
 
     max_decoder_seq_length = decoder_input_data.shape[1]
@@ -37,8 +37,6 @@ def infer_recitation_to_text(args):
     # Perform inference on some of the audio files
     with open(os.path.join(args.output_dir, f'inference-{prefix}.txt'), 'w') as f:
         num_predict = args.num_predict
-        if num_predict == -1:
-            num_predict = encoder_input_data.shape[0]
         for seq_index in range(num_predict):
             print(seq_index, end=' ')
             input_seq = encoder_input_data[seq_index: seq_index + 1]

@@ -74,7 +74,7 @@ def get_one_hot_encoded_verse(surah_num, ayah_num):
     return decoder_input, decoder_target
 
 
-def shuffle_together(array1, array2, array3):
+def shuffle_together(array1, array2, array3, array4):
     """
     A helper method to randomly shuffle the order of three arrays while keeping their relative orders the same.
     :param array1:
@@ -85,12 +85,13 @@ def shuffle_together(array1, array2, array3):
     n1 = array1.shape[0]
     n2 = array2.shape[0]
     n3 = array3.shape[0]
-    assert n1 == n2 == n3
+    n4 = array4.shape[0]
+    assert n1 == n2 == n3 == n4
     order = np.random.permutation(n1)
-    return array1[order], array2[order], array3[order]
+    return array1[order], array2[order], array3[order], array4[order]
 
 
-def get_seq2seq_data(local_coefs_dir='../.outputs/mfcc', surahs=[1], n=100):
+def get_seq2seq_data(local_coefs_dir='../.outputs/mfcc', surahs=[1], n=100, return_filenames=False):
     """
     Builds a dataset to be used with the sequence-to-sequence network.
     :param local_coefs_dir: a string with the path of the coefficients for prediction
@@ -101,6 +102,7 @@ def get_seq2seq_data(local_coefs_dir='../.outputs/mfcc', surahs=[1], n=100):
         encoder_input_data = []
         decoder_input_data = []
         decoder_target_data = []
+        filenames = []
         for surah_num in surahs:
             local_surah_dir = os.path.join(local_coefs_dir, "s" + str(surah_num))
             for _, ayah_directories, _ in os.walk(local_surah_dir):
@@ -117,19 +119,23 @@ def get_seq2seq_data(local_coefs_dir='../.outputs/mfcc', surahs=[1], n=100):
                             decoder_input, decoder_target = get_one_hot_encoded_verse(int(surah_num), int(ayah_num))
                             decoder_input_data.append(decoder_input)
                             decoder_target_data.append(decoder_target)
+                            filenames.append(recording_filename)
                             count += 1
                             if count == n:
-                                return encoder_input_data, decoder_input_data, decoder_target_data
-        return encoder_input_data, decoder_input_data, decoder_target_data
+                                return encoder_input_data, decoder_input_data, decoder_target_data, filenames
+        return encoder_input_data, decoder_input_data, decoder_target_data, filenames
 
-    encoder_input_data, decoder_input_data, decoder_target_data = get_encoder_and_decoder_data(n=n)
+    encoder_input_data, decoder_input_data, decoder_target_data, filenames = get_encoder_and_decoder_data(n=n)
     encoder_input_data = convert_list_of_arrays_to_padded_array(encoder_input_data)
     decoder_input_data = convert_list_of_arrays_to_padded_array(decoder_input_data)
     decoder_target_data = convert_list_of_arrays_to_padded_array(decoder_target_data)
-    encoder_input_data, decoder_input_data, decoder_target_data = shuffle_together(
-        encoder_input_data, decoder_input_data, decoder_target_data)
+    encoder_input_data, decoder_input_data, decoder_target_data, filenames = shuffle_together(
+        encoder_input_data, decoder_input_data, decoder_target_data, np.array(filenames))
 
-    return encoder_input_data, decoder_input_data, decoder_target_data
+    if return_filenames:
+        return encoder_input_data, decoder_input_data, decoder_target_data, filenames
+    else:
+        return encoder_input_data, decoder_input_data, decoder_target_data
 
 
 def decode_sequence(input_seq, num_decoder_tokens, encoder_model, decoder_model, max_decoder_seq_length):
