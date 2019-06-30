@@ -8,6 +8,8 @@ Date: Jan. 13, 2019
 import numpy as np
 import os
 import wave
+from pydub import AudioSegment
+from pydub.exceptions import PydubException
 try:
     import webrtcvad
 except ImportError:
@@ -98,20 +100,28 @@ def open_recording(path_to_audio):
     # Check for valid WAVE header.
     try:
         wf = wave.open(path_to_audio, "rb")
-        wav_bytes = wf.readframes(wf.getnframes())
-        sample_rate_hz = wf.getframerate()
-        num_channels = wf.getnchannels()
-        wf.close()
-        return (True, wav_bytes, sample_rate_hz, num_channels)
-        
-    # If wave can not load the file, print an error and exit the function.
+    # If wave can not load the file, try convert it from MPEG-4 to WAV.
     except wave.Error:
-        print("Invalid wave header found", path_to_audio, ", removing.")
 
-        if os.path.exists(path_to_audio):
-            os.remove(path_to_audio)
+        try:
+            print("Converting", path_to_audio, "to valid wave file...")
+            seg = AudioSegment.from_file(path_to_audio)
+            seg.export(path_to_audio, format="wav")
+            wf = wave.open(path_to_audio, "rb")
+        # If we cannot convert/still cannot load as WAV, print an error and exit function
+        except (wave.Error, PydubException):
+            print("Invalid wave header found", path_to_audio, ", removing.")
 
-        return (False, None, None, None)
+            if os.path.exists(path_to_audio):
+                os.remove(path_to_audio)
+
+            return (False, None, None, None)
+
+    wav_bytes = wf.readframes(wf.getnframes())
+    sample_rate_hz = wf.getframerate()
+    num_channels = wf.getnchannels()
+    wf.close()
+    return (True, wav_bytes, sample_rate_hz, num_channels)
 
 def open_feature_file(path_to_audio):
     """

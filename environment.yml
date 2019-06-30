@@ -8,6 +8,7 @@ dependencies:
   - matplotlib=3.0.2
   - numpy=1.15.4
   - pandas=0.24.1
+  - pydub=0.23.1
   - python=3.6.8
   - requests=2.21.0
   - scikit-learn=0.20.2
