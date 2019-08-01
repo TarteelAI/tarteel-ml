@@ -8,7 +8,7 @@ https://github.com/kareemn/Tarteel-ML/blob/master/download.py
 Modified by Hamzah Khan (khanh111) and added to the tarteel.io/Tarteel-ML on Jan. 12.
 """
 
-import audio_preprocessing.recording_utils as recording_utils
+import utils.recording as recording_utils
 import csv
 import os
 import requests
