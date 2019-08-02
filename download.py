@@ -8,6 +8,7 @@ https://github.com/kareemn/Tarteel-ML/blob/master/download.py
 Modified by Hamzah Khan (khanh111) and added to the tarteel.io/Tarteel-ML on Jan. 12.
 """
 
+import utils.files as file_utils
 import utils.recording as recording_utils
 import csv
 import os
@@ -25,13 +26,16 @@ TARTEEL_LIVE_CSV_URL = "https://www.tarteel.io/download-full-dataset-csv"
 
 parser = ArgumentParser(description='Tarteel Audio Downloader')
 parser.add_argument('--csv_url', type=str, default=TARTEEL_V1_CSV_URL)
-parser.add_argument('--local_csv_cache', type=str, default='.cache/local.csv')
-parser.add_argument('--local_download_dir', type=str, default='.audio')
+parser.add_argument('--local_csv_filename', type=str, default='local.csv')
+parser.add_argument('--cache_dir', type=str, default='.cache')
 parser.add_argument('--vad_check', type=bool, default=True)
+parser.add_argument('-u', '--use_cache', type=bool, default=False)
 parser.add_argument('-v', '--verbose', type=bool, default=False)
 parser.add_argument('-s', '--surah', type=int)
 args = parser.parse_args()
 
+DATASET_CSV_CACHE = 'csv'
+AUDIO_CACHE = 'audio'
 
 # Define constants.
 NO_FRAMES_VALUE = 1.0
@@ -40,29 +44,31 @@ DEFAULT_NON_SPEECH_THRESHOLD_FRACTION = 0.5
 
 WEBRTCVAD_SUPPORTED_SAMPLE_RATES_HZ = [8000, 16000, 32000, 48000]
 
-def download_csv_dataset():
-    print("Downloading CSV from", args.csv_url)
-    with requests.Session() as s:
-        download = s.get(args.csv_url)
+def does_cached_csv_dataset_exist(path_to_dataset_csv):
+    return os.path.isfile(path_to_dataset_csv)
 
-        os.makedirs(os.path.dirname(args.local_csv_cache))
-        decoded_content = download.content.decode('utf-8')
-        file = open(args.local_csv_cache, "w")
-        file.write(decoded_content)
+def download_csv_dataset(csv_url, dataset_csv_path, verbose=False):
+    if verbose:
+        print("Downloading CSV from ", csv_url, " to ", dataset_csv_path, ".")
+    with requests.Session() as request_session:
+        response = request_session.get(csv_url)
+
+        decoded_dataset = response.content.decode('utf-8')
+        file = open(dataset_csv_path, "w")
+        file.write(decoded_dataset)
         file.close()
-        print ("Done downloading CSV.")
 
-def parse_csv():
-    file = open(args.local_csv_cache, "r")
+def get_dataset_entries(path_to_dataset_csv):
+    """
+    A function to parse and return the rows of the dataset csv.
+    """
+    file = open(path_to_dataset_csv, "r")
     content = file.read()
-    cr = csv.reader(content.splitlines(), delimiter=',')
-    rows = list(cr)
-    return rows
+    csv_data = csv.reader(content.splitlines(), delimiter=',')
+    entries = list(csv_data)
+    return entries
 
-def cached_csv_exists():
-    return os.path.isfile(args.local_csv_cache)
-
-def download_audio(row, local_download_dir):
+def download_audio(row, local_download_dir, verbose=False):
     """
     Downloads an audio recording given its entry in a Tarteel dataset csv.
     """
@@ -76,7 +82,7 @@ def download_audio(row, local_download_dir):
     # Download and save the audio recording to the given path.
     try:
         with requests.Session() as s:
-            if args.verbose:
+            if verbose:
                 print("Downloading", url, "to", local_download_path, ".")
             download = s.get(url)
             dirname = os.path.dirname(local_download_path)
@@ -116,15 +122,41 @@ def download_audio(row, local_download_dir):
 
 if __name__ == "__main__":
 
-    if not cached_csv_exists():
-        download_csv_dataset()
+    # Parse the arguments.
+    cache_directory = args.cache_dir
+    dataset_csv_url = args.csv_url
+    dataset_csv_filename = args.local_csv_filename
+    use_cache = args.use_cache
+    verbose = args.verbose
+    surah_to_download = args.surah
+
+    # Prepare all requisite cache directories.
+    subcache_directory_names = (DATASET_CSV_CACHE, AUDIO_CACHE)
+    csv_cache_dir, audio_cache_dir = file_utils.prepare_cache_directories(subcache_directory_names,
+                                                                          cache_directory=cache_directory,
+                                                                          use_cache=use_cache,
+                                                                          verbose=verbose)
+
+    # Create path to dataset csv.
+    path_to_dataset_csv = os.path.join(csv_cache_dir, dataset_csv_filename)
+
+    # If we have decided not to use the cache, download the dataset CSV.
+    if not use_cache:
+        file_utils.clean_cache_directories(cache_directory=cache_directory)
+
+    # If csv is not in specified location, then throw an error.
+    if not does_cached_csv_dataset_exist(path_to_dataset_csv):
+        if verbose:
+            print('Dataset CSV not found at {}. Downloading to location...'.format(path_to_dataset_csv))
+        download_csv_dataset(dataset_csv_url, path_to_dataset_csv, verbose=verbose)
     else:
-        print("Using cached copy of csv at", args.local_csv_cache)
+        if verbose:
+            print("Using cached copy of dataset csv at {}.".format(path_to_dataset_csv))
 
-    rows = parse_csv()
+    # Read the rows of dataset csv.
+    entries = get_dataset_entries(path_to_dataset_csv)
 
-    for row in rows:
-        if row[0] == str(args.surah):
-            sample_rate_hz = download_audio(row, args.local_download_dir)
-        # else:
-        #     download_audio(row)
+    # Download the audio in the dataset.
+    for entry in entries:
+        if entry[0] == str(surah_to_download):
+            sample_rate_hz = download_audio(entry, audio_cache_dir, verbose=verbose)
