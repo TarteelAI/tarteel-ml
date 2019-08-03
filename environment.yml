@@ -4,14 +4,16 @@ channels:
   - defaults
 dependencies:
   - dill=0.2.8.2
+  - ffmpeg=4.0
   - jupyter=1.0.0
   - matplotlib=3.0.2
   - numpy=1.15.4
   - pandas=0.24.1
+  - pip=19.1
   - python=3.6.8
   - requests=2.21.0
   - scikit-learn=0.20.2
+  - sox=14.4.2
   - tensorflow=1.12.0
   - pip:
     - pyAudioAnalysis==0.2.5
-    - webrtcvad==2.0.10
