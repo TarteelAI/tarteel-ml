@@ -23,10 +23,18 @@ def prepare_cache_directories(subdirectory_names_tuple, cache_directory=DEFAULT_
     subcache_directory_list = []
 
     for subdirectory_name in subdirectory_names_tuple:
-        subcache_directory_path = create_cache_directory(subdirectory_path, cache_directory=cache_directory, use_cache=True, verbose=verbose)
+        subcache_directory_path = create_cache_directory(subdirectory_name, cache_directory=cache_directory, use_cache=True, verbose=verbose)
         subcache_directory_list.append(subcache_directory_path)
 
     return tuple(subcache_directory_list)
+
+def prepare_ayah_directory(directory_path, surah_num, ayah_num):
+    """
+    Prepares a directory structure for an ayah. Returns the directory path.
+    """
+    ayah_directory_path = os.path.join(directory_path, 's{}'.format(surah_num), 'a{}'.format(ayah_num))
+    os.makedirs(ayah_directory_path, exist_ok=True)
+    return ayah_directory_path
 
 def create_temporary_cache_directory_name():
     """
