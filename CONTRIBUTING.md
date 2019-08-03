@@ -22,13 +22,13 @@ conda env create -f environment.yml
 
 After this, activate the `tarteel` environment.
 ```commandline
-source activate tarteel
+source activate tarteel-ml
 ```
 
 You should now be ready to contribute to Tarteel-ML! When you are done, remember to deactivate the
 environment.
 ```commandline
-source deactivate tarteel
+source deactivate tarteel-ml
 ```
 
 
