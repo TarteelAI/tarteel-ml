@@ -91,7 +91,7 @@ def shuffle_together(*arrays):
     order = np.random.permutation(first_size)
     return tuple([array[order] for array in arrays]])
 
-
+  
 def get_seq2seq_data(local_coefs_dir='../.outputs/mfcc', surahs=[1], n=100, return_filenames=False):
     """
     Builds a dataset to be used with the sequence-to-sequence network.
