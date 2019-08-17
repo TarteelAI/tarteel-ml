@@ -2,7 +2,8 @@
 **/*.pkl
 **/*.pyc
 .audio/**/*.wav
-.cache/**/*.csv
+.cache/**
+env/**
 .idea/
 .outputs/
 .idea/*

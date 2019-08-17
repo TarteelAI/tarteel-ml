@@ -1,5 +1,5 @@
 """
-A file containing utils for dealing with Tarteel audio recordings.
+A file containing utils for dealing with Tarteel recordings.
 
 Author: Hamzah Khan
 Date: Jan. 13, 2019
@@ -7,12 +7,9 @@ Date: Jan. 13, 2019
 
 import numpy as np
 import os
+import requests
+from urllib.parse import urlparse
 import wave
-try:
-    import webrtcvad
-except ImportError:
-    print("Warning: webrtcvad could not be imported, may cause errors.")
-
 
 DEFAULT_NON_SPEECH_THRESHOLD_FRACTION = 0.5
 ALL_SURAHS = None
@@ -80,7 +77,7 @@ def get_path_to_recording(local_download_dir, surah_num, ayah_num, filename):
     local_path = os.path.join(local_download_dir, "s" + str(surah_num), "a" + str(ayah_num), filename)
     return local_path
 
-def get_path_to_recording_by_id(local_download_dir, surah_num, ayah_num, recording_id, file_extension='wav'):
+def get_path_to_recording_by_id(local_download_dir, surah_num, ayah_num, recording_id, file_extension='raw'):
     """
     Returns the path of a single recording, given the local_download_dir, the surah and ayah numbers, and the recording
     id.
@@ -120,54 +117,24 @@ def open_feature_file(path_to_audio):
     """
     return np.load(path_to_audio)
 
-def has_speech(wav_bytes, 
-               sample_rate_hz, 
-               num_channels, 
-               non_speech_threshold_fraction=DEFAULT_NON_SPEECH_THRESHOLD_FRACTION,
-               verbose=False):
+def download_recording_from_url(url, download_folder, use_cache=True, verbose=False):
     """
-    Returns true if at least (1 - non_speech_threshold_fraction) percentage of frames contain voice activity.
-    Note: webrtc VAD does not currently support 44.1MHz, so we have no way of checking those files for empty audio.
+    Downloads the audio from the given URL.
     """
+    # Get wav filename from URL
+    parsed_url = urlparse(url)
+    wav_filename = os.path.basename(parsed_url.path)
 
-    # Use webrtc's VAD with the lowest level of aggressiveness.
-    mono_channel_bytes = wav_bytes
+    download_filepath = os.path.join(download_folder, wav_filename)
 
-    if num_channels == 2:
-        # just take the left channel for simplicity purposes.
-        # We're just trying to get a quick sanity check, no need
-        # to mix the two channels.
-        mono_channel_bytes = b"".join([wav_bytes[i:i+2] for i in range(0, len(wav_bytes), 4)])
-
-    vad = webrtcvad.Vad(1)
-    frame_duration = 10  # ms
-    bytes_per_sample = 2 # assuming 16-bit PCM.
-    samples_per_vaded_chunk = (sample_rate_hz * frame_duration / 1000)
-    bytes_per_vaded_chunk = int(samples_per_vaded_chunk*bytes_per_sample)
-    num_speech_frames = 0
-    num_non_speech_frames = 0
-
-    for i in range(0, len(mono_channel_bytes)-bytes_per_vaded_chunk, bytes_per_vaded_chunk):
-        chunk_to_vad = mono_channel_bytes[i:i+bytes_per_vaded_chunk]
-        vad_frame_length = int(len(chunk_to_vad) / bytes_per_sample)
-        if (webrtcvad.valid_rate_and_frame_length(sample_rate_hz, vad_frame_length)
-            and vad.is_speech(chunk_to_vad, sample_rate_hz)):
-            num_speech_frames += 1
-        else:
-            num_non_speech_frames += 1
-
-    has_frames = (num_speech_frames + num_non_speech_frames > 0)
-    emptyAudio = (num_speech_frames == 0 or (num_speech_frames and num_non_speech_frames == 0))
-
-    if has_frames:
-        percentage_non_speech = (float(num_non_speech_frames) / float(num_non_speech_frames+num_speech_frames))
+    # Download audio or use cached copy
+    if not os.path.exists(download_filepath) or not use_cache:
+        if verbose:
+            print('Downloading %s...' % (wav_filename))
+        r = requests.get(url, allow_redirects=True)
+        open(download_filepath, 'wb').write(r.content)
     else:
-        # If there are no frames, return a default (positive > 0.5) number.
-        percentage_non_speech = NO_FRAMES_VALUE
+        if verbose:
+            print('%s found in cache' % (wav_filename))
 
-    if verbose:
-        print ("percentage non-speech:", percentage_non_speech,
-               "num_speech_frames", num_speech_frames,
-               "num_non_speech_frames", num_non_speech_frames)
-
-    return not emptyAudio and percentage_non_speech < non_speech_threshold_fraction
+    return download_filepath

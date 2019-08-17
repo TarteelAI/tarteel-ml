@@ -74,23 +74,24 @@ def get_one_hot_encoded_verse(surah_num, ayah_num):
     return decoder_input, decoder_target
 
 
-def shuffle_together(array1, array2, array3, array4):
+def shuffle_together(*arrays):
     """
-    A helper method to randomly shuffle the order of three arrays while keeping their relative orders the same.
-    :param array1:
-    :param array2:
-    :param array3:
+    A helper method to randomly shuffle the order of an arbitrary number of arrays while keeping their relative orders
+    the same.
+    :param arrays A list of passed-in arrays.
     :return:
     """
-    n1 = array1.shape[0]
-    n2 = array2.shape[0]
-    n3 = array3.shape[0]
-    n4 = array4.shape[0]
-    assert n1 == n2 == n3 == n4
-    order = np.random.permutation(n1)
-    return array1[order], array2[order], array3[order], array4[order]
+    array_sizes = [array.shape[0] for array in arrays]
 
+    # All arrays should be of equal size.
+    first_size = array_sizes[0]
+    assert all([array_size == first_size for array_size in array_sizes])
 
+    # Permute the arrays and return them as a tuple.
+    order = np.random.permutation(first_size)
+    return tuple([array[order] for array in arrays]])
+
+  
 def get_seq2seq_data(local_coefs_dir='../.outputs/mfcc', surahs=[1], n=100, return_filenames=False):
     """
     Builds a dataset to be used with the sequence-to-sequence network.
