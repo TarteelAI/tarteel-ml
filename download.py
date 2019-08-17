@@ -15,10 +15,9 @@ Example command: python download.py -s 1 --use_cache
 import utils.audio as audio_utils
 import utils.files as file_utils
 import utils.recording as recording_utils
+
 import csv
-import os
 import requests
-import wave
 
 from urllib.parse import urlparse
 from argparse import ArgumentParser
@@ -46,6 +45,18 @@ DOWNLOADED_AUDIO_CACHE = 'downloaded_audio'
 RAW_AUDIO_CACHE = 'raw_audio'
 
 
+def download_csv_dataset(csv_url, dataset_csv_path, verbose=False):
+    if verbose:
+        print("Downloading CSV from ", csv_url, " to ", dataset_csv_path, ".")
+    with requests.Session() as request_session:
+        response = request_session.get(csv_url)
+
+        decoded_dataset = response.content.decode('utf-8')
+        file = open(dataset_csv_path, "w")
+        file.write(decoded_dataset)
+        file.close()
+
+
 def convert_to_bool(str):
     """
     Converts string versions of true or false to bools.
@@ -58,29 +69,6 @@ def convert_to_bool(str):
     else:
         raise TypeError("Provided string is neither 'true' nor 'false'.")
 
-
-def download_csv_dataset(csv_url, dataset_csv_path, verbose=False):
-    if verbose:
-        print("Downloading CSV from ", csv_url, " to ", dataset_csv_path, ".")
-    with requests.Session() as request_session:
-        response = request_session.get(csv_url)
-
-        decoded_dataset = response.content.decode('utf-8')
-        file = open(dataset_csv_path, "w")
-        file.write(decoded_dataset)
-        file.close()
-
-def get_dataset_entries(path_to_dataset_csv):
-    """
-    A function to parse and return the header and rows of the dataset csv.
-    """
-    with open(path_to_dataset_csv, 'r') as file:
-        content = file.read()
-        csv_data = csv.reader(content.splitlines(), delimiter=',')
-        entries = list(csv_data)
-        header_row = entries[0]
-        dataset = entries[1:]
-        return header_row, dataset
 
 def download_entry_audio(entry, download_audio_dir, raw_audio_dir, use_cache=True, verbose=False):
     """
@@ -125,7 +113,7 @@ if __name__ == "__main__":
                                                   verbose=verbose)
 
     # Create path to dataset csv.
-    path_to_dataset_csv = os.path.join(csv_cache_dir, dataset_csv_filename)
+    path_to_dataset_csv = file_utils.get_path_to_dataset_csv(csv_cache_dir, dataset_csv_filename)
 
     # If we have decided not to use the cache, download the dataset CSV.
     if not use_cache:
@@ -141,7 +129,7 @@ if __name__ == "__main__":
             print("Using cached copy of dataset csv at {}.".format(path_to_dataset_csv))
 
     # Read the rows of dataset csv.
-    header_row, entries = get_dataset_entries(path_to_dataset_csv)
+    header_row, entries = file_utils.get_dataset_entries(path_to_dataset_csv)
 
     # Filter out recordings that have been evaluated and labeled falsely.
     labeled_entries = [entry for entry in entries if convert_to_bool(entry[9]) and convert_to_bool(entry[10])]

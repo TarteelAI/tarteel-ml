@@ -2,8 +2,12 @@
 Utility functions for directory and file IO.
 Author: Fahim Dalvi, Hamzah Khan
 Date: May 3, 2019
+
+A file for helper functions that read and manipulate non-audio files and directories. Helpers in this file should NOT
+require an internet connection to use.
 """
 
+import csv
 import os
 import random
 import shutil
@@ -13,6 +17,21 @@ DEFAULT_CACHE_DIRECTORY = '.cache'
 
 def does_cached_csv_dataset_exist(path_to_dataset_csv):
     return os.path.isfile(path_to_dataset_csv)
+
+def get_path_to_dataset_csv(csv_cache_dir, dataset_csv_filename):
+    return os.path.join(csv_cache_dir, dataset_csv_filename)
+
+def get_dataset_entries(path_to_dataset_csv):
+    """
+    A function to parse and return the header and rows of the dataset csv.
+    """
+    with open(path_to_dataset_csv, 'r') as file:
+        content = file.read()
+        csv_data = csv.reader(content.splitlines(), delimiter=',')
+        entries = list(csv_data)
+        header_row = entries[0]
+        dataset = entries[1:]
+        return header_row, dataset
 
 def prepare_cache_directories(subdirectory_names_tuple, cache_directory=DEFAULT_CACHE_DIRECTORY, use_cache=True, verbose=False):
     """
