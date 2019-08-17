@@ -8,6 +8,8 @@ https://github.com/kareemn/Tarteel-ML/blob/master/download.py
 Modified by Hamzah Khan (khanh111) and added to the tarteel.io/Tarteel-ML on Jan. 12, 2019.
 
 Refactored completely by Hamzah Khan (khanh111) on Aug. 03, 2019.
+
+Example command: python download.py -s 1 --use_cache
 """
 
 import utils.audio as audio_utils
@@ -31,25 +33,18 @@ parser = ArgumentParser(description='Tarteel Audio Downloader')
 parser.add_argument('--csv_url', type=str, default=TARTEEL_V1_LABELED_CSV_URL)
 parser.add_argument('--local_csv_filename', type=str, default='local.csv')
 parser.add_argument('--cache_dir', type=str, default='.cache')
-parser.add_argument('-u', '--use_cache', type=bool, default=False)
-parser.add_argument('-v', '--verbose', type=bool, default=False)
+parser.add_argument('-u', '--use_cache', action='store_true')
+parser.add_argument('-v', '--verbose', action='store_true')
 parser.add_argument('-s', '--surah', type=int)
-parser.add_argument('-k', '--keep_downloaded_audio', type=bool, default=False)
+parser.add_argument('-k', '--keep_downloaded_audio', action='store_true')
 args = parser.parse_args()
 
+
+# Define constants.
 DATASET_CSV_CACHE = 'csv'
 DOWNLOADED_AUDIO_CACHE = 'downloaded_audio'
 RAW_AUDIO_CACHE = 'raw_audio'
 
-# Define constants.
-NO_FRAMES_VALUE = 1.0
-
-DEFAULT_NON_SPEECH_THRESHOLD_FRACTION = 0.5
-
-WEBRTCVAD_SUPPORTED_SAMPLE_RATES_HZ = [8000, 16000, 32000, 48000]
-
-def does_cached_csv_dataset_exist(path_to_dataset_csv):
-    return os.path.isfile(path_to_dataset_csv)
 
 def convert_to_bool(str):
     """
@@ -87,7 +82,7 @@ def get_dataset_entries(path_to_dataset_csv):
         dataset = entries[1:]
         return header_row, dataset
 
-def download_entry_audio(entry, raw_audio_dir, audio_dir, use_cache=True, verbose=False):
+def download_entry_audio(entry, download_audio_dir, raw_audio_dir, use_cache=True, verbose=False):
     """
     Downloads an audio recording given its entry in a Tarteel dataset csv.
     """
@@ -97,16 +92,19 @@ def download_entry_audio(entry, raw_audio_dir, audio_dir, use_cache=True, verbos
     surah_num = int(surah_num)
     ayah_num = int(ayah_num)
 
-    # Ensure that the directories that the recording will be saved to exist.
-    downloaded_ayah_audio_dir = file_utils.prepare_ayah_directory(raw_audio_dir, surah_num, ayah_num)
-    ayah_audio_dir = file_utils.prepare_ayah_directory(raw_audio_dir, surah_num, ayah_num)
+    # Ensure the proper surah directory structure for the downloaded audio.
+    downloaded_ayah_audio_dir = file_utils.prepare_ayah_directory(download_audio_dir, surah_num, ayah_num)
+    ayah_audio_dir = file_utils.prepare_ayah_directory(download_audio_dir, surah_num, ayah_num)
 
-    # Download and save the raw audio recording to the given path.
+    # Download and save the initially downloaded audio recording to the given path.
     downloaded_audio_path = recording_utils.download_recording_from_url(url, downloaded_ayah_audio_dir, use_cache=use_cache, verbose=verbose)
 
-    # Convert raw audio to a standard format.
+    # Ensure the proper surah directory structure for the raw audio.
+    raw_ayah_audio_dir = file_utils.prepare_ayah_directory(raw_audio_dir, surah_num, ayah_num)
+
+    # Convert the downloaded audio to a standard raw audio format and move it to another directory.
     # This audio is being converted to 44.1 MHz, 16bps audio (Google Speech Recognition's requirements).
-    raw_audio_path = audio_utils.convert_audio(downloaded_audio_path, raw_audio_dir, use_cache=use_cache, verbose=verbose)
+    raw_audio_path = audio_utils.convert_audio(downloaded_audio_path, raw_ayah_audio_dir, use_cache=use_cache, verbose=verbose)
 
 if __name__ == "__main__":
 
@@ -135,7 +133,7 @@ if __name__ == "__main__":
         file_utils.clean_cache_directories(cache_directory=cache_directory)
 
     # If csv is not in specified location, then throw an error.
-    if not does_cached_csv_dataset_exist(path_to_dataset_csv):
+    if not file_utils.does_cached_csv_dataset_exist(path_to_dataset_csv):
         if verbose:
             print('Dataset CSV not found at {}. Downloading to location...'.format(path_to_dataset_csv))
         download_csv_dataset(dataset_csv_url, path_to_dataset_csv, verbose=verbose)

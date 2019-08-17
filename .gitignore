@@ -3,6 +3,7 @@
 **/*.pyc
 .audio/**/*.wav
 .cache/**
+env/**
 .idea/
 .outputs/
 .idea/*

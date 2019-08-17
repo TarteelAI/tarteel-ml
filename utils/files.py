@@ -11,6 +11,9 @@ import string
 
 DEFAULT_CACHE_DIRECTORY = '.cache'
 
+def does_cached_csv_dataset_exist(path_to_dataset_csv):
+    return os.path.isfile(path_to_dataset_csv)
+
 def prepare_cache_directories(subdirectory_names_tuple, cache_directory=DEFAULT_CACHE_DIRECTORY, use_cache=True, verbose=False):
     """
     Creates a set of directories to be used for caching different pieces of data.
@@ -71,10 +74,10 @@ def clean_cache_directories(cache_directory=DEFAULT_CACHE_DIRECTORY, verbose=Fal
     if not os.path.isdir(cache_directory):
         os.makedirs(cache_directory)
         
-    for file in os.listdir(cache_directory):
+    for subdirectory in os.listdir(cache_directory):
         if verbose:
-            print("Removing %s" % (file))
-        os.remove(os.path.join(cache_directory, file))
+            print("Removing cache_subdirectory %s." % (subdirectory))
+        shutil.rmtree(os.path.join(cache_directory, subdirectory))
 
 def delete_cache_directories(cache_directory=DEFAULT_CACHE_DIRECTORY):
     """
