@@ -8,4 +8,5 @@ env/**
 .outputs/
 .idea/*
 audio_preprocessing/.ipynb_checkpoints/**
+*.tmp-*/**
 
