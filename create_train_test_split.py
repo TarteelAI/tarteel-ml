@@ -30,7 +30,7 @@ parser.add_argument('--train_frac', type=float, default=TRAIN_SPLIT_FRACTION)
 parser.add_argument('--test_frac', type=float, default=TEST_SPLIT_FRACTION)
 parser.add_argument('--validation_frac', type=float, default=VALIDATION_SPLIT_FRACTION)
 parser.add_argument('-s', '--seed', type=int, default=DEFAULT_RANDOM_SEED)
-parser.add_argument('-v', '--verbose', action='store_false')
+parser.add_argument('-v', '--verbose', action='store_true')
 args = parser.parse_args()
 
 # Define constants.
@@ -133,20 +133,16 @@ if __name__ == '__main__':
     # Convert the Json data to a dictionary of ayah numbers as keys and text as values.
     ayahs_to_text = text_utils.convert_quran_json_to_dict(quran_json_obj, should_include_bismillah=False)
 
-    print(len(ayahs_to_text))
-
     # Run the ayah split, forming groups of ayah numbers with identical text.
     split_fractions = [args.train_frac, args.test_frac, args.validation_frac]
     X_train, X_test, X_valid = create_train_test_validation_split(ayahs_to_text, split_fractions,
                                                                   not args.dont_group_identical_text, args.seed)
-    
-    print(len(X_train) + len(X_test) + len(X_valid))
 
     # Save the resulting split to a file.
     if args.output_directory is not None:
         save_splits(args.output_directory, args.seed, split_fractions, X_train, X_test, X_valid)
         if args.verbose:
-            print("Split data written to files in " + args.output_directory + ".")
+            print("Split data written to files in " + args.output_directory)
     else:
         if args.verbose:
             print("Data splitting completed.")
