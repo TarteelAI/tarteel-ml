@@ -43,7 +43,7 @@ def convert_quran_json_to_dict(quran_obj, should_include_bismillah=False):
         surah_num = surah_obj[NUM_KEY]
 
         for ayah_obj in surah_obj[AYAHS_KEY]:
-            ayah_num                                 = ayah_obj[NUM_KEY]
+            ayah_num = ayah_obj[NUM_KEY]
             ayah_to_text_dict[(surah_num, ayah_num)] = ayah_obj[TEXT_KEY]
 
             if BISMILLAH_KEY in ayah_obj:
