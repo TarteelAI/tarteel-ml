@@ -11,5 +11,4 @@ audio_preprocessing/.ipynb_checkpoints/**
 *.tmp-*/**
 **/*.txt
 docs/build/
-__pycache__/
 .DS_Store

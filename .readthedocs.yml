@@ -5,8 +5,9 @@ sphinx:
 
 python:
   version: 3.6
+  install:
+    - requirements: docs/requirements.txt
   # install:
   #   # Ensure sphinx-build is in PATH
   #   - method: setuptools
   #     path: docs/sphinx_build_symlink/
-  
