@@ -10,4 +10,5 @@ env/**
 audio_preprocessing/.ipynb_checkpoints/**
 *.tmp-*/**
 **/*.txt
-
+docs/build/
+*.DS_Store

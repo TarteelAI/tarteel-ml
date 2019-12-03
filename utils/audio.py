@@ -1,17 +1,20 @@
-"""
-A file containing utils for dealing with audio.
-
-Author: Hamzah Khan
-Date: Aug. 03, 2019
-"""
+"""Utility functions for processing audio."""
+__author__ = 'Hamzah Khan'
 
 import os
 import re
 import subprocess
 
-def detect_audio_type(audio_filepath):
-    """
-    Returns the type of audio encoding. Currently uses ffprobe to get this information.
+def detect_audio_type(audio_filepath: str) -> str:
+    """Returns the type of audio encoding. 
+    
+    Currently uses ffprobe to get this information.
+
+    Args:
+        audio_filepath: Absolute path to the audio file to process.
+
+    Returns:
+        audio_type: The audio encoding type.
     """
     command_args = ['ffprobe', '-hide_banner', audio_filepath]
     ffprobe_output = subprocess.check_output(command_args, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -24,10 +27,22 @@ def detect_audio_type(audio_filepath):
 
     return audio_type
 
-def convert_audio(audio_filepath, output_folder, bitrate=16, sample_rate=44100, use_cache=True, verbose=False):
-    """
-    Converts the given audio into raw audio with the given bitrate and sample rate. Defaults are set to match Google
-    Speech Recognition's requirements.
+def convert_audio(audio_filepath: str, output_folder: str, bitrate: int = 16, 
+                  sample_rate: int = 44100, use_cache: bool = True, verbose: bool = False) -> str:
+    """Converts the given audio into raw audio with the given bitrate and sample rate. 
+    
+    Defaults are set to match Google Speech Recognition's requirements.
+
+    Args:
+        audio_filepath: Relative file name of the audio file to process.
+        output_folder: Directory to put raw audio in
+        bitrate: Audio bitrate
+        sample_rate: Audio sampling rate in Hz
+        use_cache: Use the audio file already in the output directory if found
+        verbose: Talk a lot.
+    
+    Returns:
+        raw_audio_path: Absolute filepath to the converted audio file.
     """
     audio_filename = os.path.basename(audio_filepath)
     raw_audio_filename = audio_filename[:-4] + '.raw'
