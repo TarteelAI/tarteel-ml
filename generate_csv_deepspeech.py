@@ -12,6 +12,7 @@ import logging
 import os
 from pathlib import Path
 
+from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from typing import List, Tuple
 
@@ -85,14 +86,49 @@ def create_csv_file(file_names: List) -> List:
     return csv_rows
 
 
+def sum_is_one(*num_args: float):
+    return sum(i for i in num_args) == 1.0
+
+
+def create_train_test_validation_split(
+        train_fraction: float,
+        test_fraction: float,
+        validate_fraction: float,
+        data: List) -> Tuple[List, List, List]:
+    if not sum_is_one(train_fraction, test_fraction, validate_fraction):
+        raise ValueError("Split fractions do not sum to one!")
+
+    # Splitting will be done in two steps, so identify the proper fractions for them.
+    first_split_fraction = train_fraction + validate_fraction
+    second_split_fraction = 1.0 - (validate_fraction / first_split_fraction)
+
+    X_train_valid, X_test = train_test_split(
+        data, train_size=first_split_fraction, random_state=args.seed, shuffle=True)
+    X_train, X_valid = train_test_split(
+        X_train_valid, train_size=second_split_fraction, random_state=args.seed, shuffle=True)
+
+    return X_train, X_test, X_valid
+
+
 def main():
     audio_directory, output_directory = check_args()  # Throws if invalid args
 
     file_names = files.get_all_files_in_directory(audio_directory)
     csv_rows, unique_alphabet = create_csv_file(file_names)
-
     csv_file_path = os.path.join(output_directory, args.filename)
     files.write_csv(csv_file_path, csv_rows)
+
+    file_name_tuple = (
+        os.path.join(output_directory, 'train.csv'),
+        os.path.join(output_directory, 'dev.csv'),
+        os.path.join(output_directory, 'test.csv'))
+    csv_rows.pop(0)
+    split_tuple = create_train_test_validation_split(
+        args.train_fraction, args.test_fraction, args.validate_fraction, csv_rows)
+    for i, split in enumerate(split_tuple):
+        split.insert(0, DEEPSPEECH_CSV_HEADERS)  # Put the header back
+        files.write_csv(file_name_tuple[i], split)
+        logging.info("Saved {}".format(file_name_tuple[i]))
 
 
 if __name__ == '__main__':
