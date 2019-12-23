@@ -20,7 +20,6 @@ class Quran:
 
     def __init__(self, quran_file: str = QURAN_FILE):
         self._quran_json = files.open_json(quran_file)
-        self._quran_json = self._quran_json['quran']['surahs']
 
     def get_quran(self):
         return self._quran_json
@@ -30,7 +29,7 @@ class Quran:
             logging.warning('Surah number out of bounds')
             return None
         try:
-            surah = self._quran_json[surah_number-1]
+            surah = self._quran_json[str(surah_number)]
             return surah
         except KeyError:
             logging.warning('Surah number not found')
@@ -38,16 +37,21 @@ class Quran:
 
     def ayah(self, surah_number: int, ayah_number: int) -> Union[dict, None]:
         try:
-            ayah = self.surah(surah_number).get('ayahs')[ayah_number-1]
+            ayah = self.surah(surah_number)[str(ayah_number)]
             return ayah
         except KeyError:
             logging.warning('Ayah not found')
             return None
 
-    def get_ayah_text(self, surah_number: int, ayah_number: int) -> Union[str, None]:
+    def get_ayah_text(self,
+                      surah_number: int,
+                      ayah_number: int,
+                      uthmani: bool = False) -> Union[str, None]:
         result = self.ayah(surah_number, ayah_number)
         if result:
-            return result.get('text')
+            if uthmani:
+                return result.get('displayText')
+            else:
+                return result.get('text')
         else:
             return result
-
