@@ -47,7 +47,9 @@ def check_args() -> Tuple[str, str]:
     output_directory = Path(args.output_directory)
     if not output_directory.is_dir():
         raise ValueError("Output directory is not a valid directory")
-    logging.info("Parameters")
+    logging.info(
+        "Parameters\nAudio Directory: {}\nOutput Directory: {}".format(
+            audio_directory, output_directory))
     return audio_directory, output_directory
 
 

@@ -8,7 +8,9 @@ import csv
 import json
 import logging
 import os
+from typing import Any
 from typing import List
+from typing import Set
 from typing import Tuple
 from typing import Union
 import random
@@ -141,3 +143,12 @@ def open_json(json_file: str) -> dict:
 def write_json(json_file: str, json_dict: dict) -> None:
     with open(json_file, 'w') as file:
         json.dump(json_dict, file)
+
+
+def write_csv(csv_file: str, rows: List[Any], has_header: bool = True) -> None:
+    with open(csv_file, 'w') as file:
+        csv_writer = csv.writer(file)
+        if has_header:
+            csv_writer.writerow(rows[0])
+            rows.pop(0)
+        csv_writer.writerows(rows)
