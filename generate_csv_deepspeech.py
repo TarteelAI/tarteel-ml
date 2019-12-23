@@ -131,7 +131,7 @@ def main():
     audio_directory, output_directory = check_args()  # Throws if invalid args
 
     file_names = files.get_all_files_in_directory(audio_directory)
-    csv_rows, unique_alphabet = create_csv_file(file_names)
+    csv_rows = create_csv_file(file_names)
     csv_file_path = os.path.join(output_directory, args.filename)
     files.write_csv(csv_file_path, csv_rows)
 
