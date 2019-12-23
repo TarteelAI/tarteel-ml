@@ -91,7 +91,9 @@ def download_entry_audio(entry, download_audio_dir, raw_audio_dir, use_cache=Tru
 
     # Convert the downloaded audio to a standard raw audio format and move it to another directory.
     # This audio is being converted to 44.1 MHz, 16bps audio (Google Speech Recognition's requirements).
-    raw_audio_path = audio_utils.convert_audio(downloaded_audio_path, raw_ayah_audio_dir, use_cache=use_cache, verbose=verbose)
+    raw_audio_path = audio_utils.convert_audio(
+        downloaded_audio_path, raw_ayah_audio_dir, use_cache=use_cache, verbose=verbose)
+
 
 if __name__ == "__main__":
 
