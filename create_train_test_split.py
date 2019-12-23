@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""
-A file for creating the train-test-validation split for the quranic text file.
+"""A file for creating the train-test-validation split for the quranic text file.
 
 Author: Hamzah Khan
-Date: Jan. 23, 2019
 """
 
 from argparse import ArgumentParser
+import logging
 import os
+from typing import List
+from typing import Tuple
 
 from sklearn.model_selection import train_test_split
 
@@ -16,7 +17,7 @@ import utils.text as text_utils
 # This gives us a 60-20-20 split by default.
 DEFAULT_RANDOM_SEED = 1
 TRAIN_SPLIT_FRACTION = 0.6
-TEST_SPLIT_FRACTION  = 0.2
+TEST_SPLIT_FRACTION = 0.2
 VALIDATION_SPLIT_FRACTION = 0.2
 
 parser = ArgumentParser(description='Tarteel Data Train-Test-Validation Splitter')
@@ -30,15 +31,24 @@ parser.add_argument('--train_frac', type=float, default=TRAIN_SPLIT_FRACTION)
 parser.add_argument('--test_frac', type=float, default=TEST_SPLIT_FRACTION)
 parser.add_argument('--validation_frac', type=float, default=VALIDATION_SPLIT_FRACTION)
 parser.add_argument('-s', '--seed', type=int, default=DEFAULT_RANDOM_SEED)
-parser.add_argument('-v', '--verbose', action='store_true')
+parser.add_argument(
+    '--log', choices=['DEBUG', 'INFO', 'WARNING', 'CRITICAL'], default='INFO',
+    help='Logging level.'
+)
 args = parser.parse_args()
+
+numeric_level = getattr(logging, args.log, None)
+logging.basicConfig(level=numeric_level)
 
 # Define constants.
 NUM_SURAHS = 114
 
 
-def create_train_test_validation_split(ayahs_to_text, train_test_validate_fractions, should_group_identical_text=True,
-                                       random_seed=DEFAULT_RANDOM_SEED):
+def create_train_test_validation_split(
+        ayahs_to_text: List,
+        train_test_validate_fractions: Tuple[int, int, int],
+        should_group_identical_text: bool = True,
+        random_seed: int = DEFAULT_RANDOM_SEED):
     """
     Create a train-test-validation split over ayahs with the same text, given the Qur'anic data.
     Returns a list of lists, each an ayah group, containing the ayah numbers.
@@ -96,9 +106,11 @@ def create_train_test_validation_split(ayahs_to_text, train_test_validate_fracti
 
     return X_train, X_test, X_valid
 
+
 def save_split_data(output_directory, filename, split_data):
-    """
-    Creates and saves a file for a specific split. Each line is a comma separated list of groups of ayah numbers.
+    """Creates and saves a file for a specific split.
+
+    Each line is a comma separated list of groups of ayah numbers.
     """
     output_path = os.path.join(output_directory, filename + ".txt")
 
@@ -111,10 +123,9 @@ def save_split_data(output_directory, filename, split_data):
         # Close the file after writing to it. 
         output_file.close()
 
+
 def save_splits(output_directory, random_seed, split_fractions, X_train, X_test, X_valid):
-    """
-    Saves the train-test-validation splits to three files. 
-    """
+    """Saves the train-test-validation splits to three files."""
     # Create the filenames.
     train_filename = "_".join(["train", "fraction", str(split_fractions[0]), "seed", str(random_seed)])
     test_filename = "_".join(["test", "fraction", str(split_fractions[1]), "seed", str(random_seed)])
@@ -131,19 +142,18 @@ if __name__ == '__main__':
     quran_json_obj = text_utils.load_quran_obj_from_json(args.path_to_quran_json);
 
     # Convert the Json data to a dictionary of ayah numbers as keys and text as values.
-    ayahs_to_text = text_utils.convert_quran_json_to_dict(quran_json_obj, should_include_bismillah=False)
+    ayahs_to_text = text_utils.convert_quran_json_to_dict(
+        quran_json_obj, should_include_bismillah=False)
 
     # Run the ayah split, forming groups of ayah numbers with identical text.
     split_fractions = [args.train_frac, args.test_frac, args.validation_frac]
-    X_train, X_test, X_valid = create_train_test_validation_split(ayahs_to_text, split_fractions,
-                                                                  not args.dont_group_identical_text, args.seed)
+    X_train, X_test, X_valid = create_train_test_validation_split(
+        ayahs_to_text, split_fractions, not args.dont_group_identical_text, args.seed)
 
     # Save the resulting split to a file.
     if args.output_directory is not None:
         save_splits(args.output_directory, args.seed, split_fractions, X_train, X_test, X_valid)
-        if args.verbose:
-            print("Split data written to files in " + args.output_directory)
+        logging.info("Split data written to files in " + args.output_directory)
     else:
-        if args.verbose:
-            print("Data splitting completed.")
+        logging.info("Data splitting completed.")
 
