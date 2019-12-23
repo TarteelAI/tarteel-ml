@@ -5,7 +5,7 @@ from typing import Union
 
 from utils import files
 
-QURAN_FILE = path.join(path.dirname(os.getcwd()), 'data/quran.json')
+QURAN_FILE = path.join(os.getcwd(), 'data/quran.json')
 MAX_SURAH_NUMBER = 114
 MIN_SURAH_NUMBER = 1
 
