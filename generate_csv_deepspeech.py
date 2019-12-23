@@ -24,6 +24,10 @@ DEEPSPEECH_FILESIZE_HEADER = 'wav_filesize'
 DEEPSPEECH_TRANSCRIPT_HEADER = 'transcript'
 DEEPSPEECH_CSV_HEADERS = [DEEPSPEECH_FILENAME_HEADER, DEEPSPEECH_FILESIZE_HEADER, DEEPSPEECH_TRANSCRIPT_HEADER]
 DEEPSPEECH_CSV_FILENAME = 'tarteel_deepspeech_full.csv'
+DEFAULT_RANDOM_SEED = 42
+TRAIN_SPLIT_FRACTION = 0.6
+TEST_SPLIT_FRACTION = 0.2
+VALIDATION_SPLIT_FRACTION = 0.2
 
 parser = argparse.ArgumentParser(description='Prepare a CSV file for Deepspeech')
 parser.add_argument(
@@ -37,6 +41,19 @@ parser.add_argument(
 parser.add_argument(
     '--filename', type=str, default=DEEPSPEECH_CSV_FILENAME,
     help='Output CSV filename.'
+)
+parser.add_argument(
+    '--train-fraction', type=float, default=TRAIN_SPLIT_FRACTION
+)
+parser.add_argument(
+    '--test-fraction', type=float, default=TEST_SPLIT_FRACTION
+)
+parser.add_argument(
+    '--validate-fraction', type=float, default=VALIDATION_SPLIT_FRACTION
+)
+parser.add_argument(
+    '-s', '--seed', type=int, default=DEFAULT_RANDOM_SEED,
+    help='Random seed for the split'
 )
 parser.add_argument(
     '--log', choices=['DEBUG', 'INFO', 'WARNING', 'CRITICAL'], default='INFO',
@@ -121,7 +138,8 @@ def main():
     file_name_tuple = (
         os.path.join(output_directory, 'train.csv'),
         os.path.join(output_directory, 'dev.csv'),
-        os.path.join(output_directory, 'test.csv'))
+        os.path.join(output_directory, 'test.csv')
+    )
     csv_rows.pop(0)
     split_tuple = create_train_test_validation_split(
         args.train_fraction, args.test_fraction, args.validate_fraction, csv_rows)
