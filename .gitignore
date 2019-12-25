@@ -1,6 +1,7 @@
 **/*.pickle
 **/*.pkl
 **/*.pyc
+**/*.csv
 .audio/**/*.wav
 .cache/**
 env/**

@@ -47,13 +47,13 @@ class AudioFile:
         info = mediainfo_json(self._filepath)
         stream = info.get('streams')[0]
         media_format = info.get('format')
-        self.duration = media_format.get('duration')
-        self.size = media_format.get('size')
+        self.duration = float(media_format.get('duration'))
+        self.size = int(media_format.get('size'))
         self.format_name = media_format.get('format_name')
-        self.sample_rate = stream.get('sample_rate')
+        self.sample_rate = int(stream.get('sample_rate'))
         self.channels = stream.get('channels')
         self.bits = stream.get('bits_per_sample')
-        self.bit_rate = media_format.get('bit_rate')
+        self.bit_rate = int(media_format.get('bit_rate'))
         self.code = stream.get('codec_name')
         try:
             self.data, _ = librosa.load(self._filepath)
@@ -81,9 +81,9 @@ class AudioFile:
         play(to_play)
 
     def save_as(self,
-                output_file: Optional[str],
-                sample_rate: Optional[int],
-                output_format: Optional[str],
+                output_file: Optional[str] = None,
+                sample_rate: Optional[int] = None,
+                output_format: Optional[str] = None,
                 subtype: str = 'PCM_16') -> None:
         output_path = output_file if output_file else self._filepath
         sr = sample_rate if sample_rate else self.sample_rate

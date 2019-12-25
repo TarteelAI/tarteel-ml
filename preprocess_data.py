@@ -83,6 +83,9 @@ class MtAudioProcessor:
 
         if audio_file.format_name != args.audio_format:
             audio_file.save_as(output_file=new_filepath, output_format=args.audio_format, sample_rate=16000)
+        else:
+            audio_file.save_as(output_file=new_filepath)
+        return
 
     def run(self):
         with Pool(self._num_processes) as p:
@@ -95,7 +98,10 @@ class MtAudioProcessor:
 
 
 if __name__ == '__main__':
-    logging.info("Parameters\n{}".format(vars(args)))
+    logging.info("Parameters\n")
+    for k, v in vars(args).items():
+        logging.info("{}: {}".format(k, v))
+    logging.info("Starting audio pre-processing...")
     mtad = MtAudioProcessor(
         args.audio_directory, args.output_directory, args.use_cache)
     mtad.run()

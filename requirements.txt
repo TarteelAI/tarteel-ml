@@ -1,5 +1,6 @@
 librosa
-sklearn
+pydub
+scikit-learn
 soundfile
 tensorflow
 tqdm
