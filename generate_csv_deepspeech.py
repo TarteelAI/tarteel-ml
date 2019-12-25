@@ -1,4 +1,4 @@
-"""Create a CSV files for audio files formatted for DeepSpeech.
+"""Create CSV files for audio files formatted for DeepSpeech.
 
 DeepSpeech format is:
 
@@ -29,10 +29,10 @@ TRAIN_SPLIT_FRACTION = 0.6
 TEST_SPLIT_FRACTION = 0.2
 VALIDATION_SPLIT_FRACTION = 0.2
 
-parser = argparse.ArgumentParser(description='Prepare a CSV file for Deepspeech')
+parser = argparse.ArgumentParser(description='Create CSV files formatted for Deepspeech.')
 parser.add_argument(
     '-i', '--audio-directory', type=str, required=True,
-    help='Path to directory with audio files .'
+    help='Path to directory with audio files.'
 )
 parser.add_argument(
     '-o', '--output-directory', type=str,

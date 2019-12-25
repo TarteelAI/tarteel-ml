@@ -1,3 +1,5 @@
+"""Create a CSV file with info on all audio files in a directory."""
+
 import argparse
 import logging
 import os
@@ -9,7 +11,7 @@ from tqdm import tqdm
 
 from utils import files
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Create a CSV file with info on all audio files in a directory.')
 parser.add_argument(
     '-i', '--input-directory', type=str
 )

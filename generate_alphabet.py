@@ -9,9 +9,9 @@ from tqdm import trange
 
 from utils import quran_helper
 
-EPILOG = 'Create a text file with all unique characters in the Quran.'
+DESCRIPTION = 'Create a text file with all unique characters in the Quran.'
 ALPHABET_FILENAME = 'alphabet.txt'
-parser = argparse.ArgumentParser(epilog=EPILOG)
+parser = argparse.ArgumentParser(description=DESCRIPTION)
 parser.add_argument(
     '-o', '--output-dir', type=str, default='.',
     help='Directory to write text file to.'
