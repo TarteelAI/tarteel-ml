@@ -1,7 +1,9 @@
 # Tarteel Machine Learning 
 
 This repo is designed to house code related to Tarteel machine learning related tasks. :microscope:
+
 Specifically, things like:
+
 * Model selection :white_check_mark:
 * Preprocessing of data :sound:
 * Model training, validation, and and iteration :repeat:
@@ -50,7 +52,7 @@ This repo is structured as follows:
 
 * [`download.py`]: Download the Tarteel dataset
 * [`create_train_test_split.py`]: Create train/test/validation split csv files.
-* [`generate_alphabet|vocabulary.py`]: Generate all unique letters/ayahs in the Quran in a text file.
+* `generate_alphabet|vocabulary.py`: Generate all unique letters/ayahs in the Quran in a text file.
 * [`generate_csv_deepspeech.py`]: Create a CSV file for training with DeepSpeech.
 
 ### Wiki :scroll:
