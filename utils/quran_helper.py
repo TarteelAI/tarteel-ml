@@ -1,11 +1,10 @@
 import logging
-import os
-from os import path
+from pathlib import Path
 from typing import Union
 
 from utils import files
 
-QURAN_FILE = path.join(os.getcwd(), 'data/quran.json')
+QURAN_FILE = Path(__file__).parent.parent.absolute() / 'data/quran.json'
 MAX_SURAH_NUMBER = 114
 MIN_SURAH_NUMBER = 1
 
@@ -13,9 +12,9 @@ MIN_SURAH_NUMBER = 1
 class Quran:
     """An object used to get a Surah's Ayahs along with transcript loaded from JSON.
 
-    The JSON file is ~2MB when loaded in memory which is acceptable. A better alternative
-    is to use a database, however that is too much overhead for the simple operations we want to
-    perform.
+    The JSON file is ~2MB when loaded in memory which is acceptable.
+    A better alternative is to use a database, however that is too much overhead for the simple
+    operations we perform.
     """
 
     def __init__(self, quran_file: str = QURAN_FILE):
