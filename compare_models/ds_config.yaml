@@ -1,9 +1,6 @@
-#model_dir: /Users/allabana/tarteel_ws/models/super_augm.pbmm
-#trie_dir: /Users/allabana/tarteel_ws/models/quran.trie
-#lm_dir: /Users/allabana/tarteel_ws/models/lm.binary
-model_dir: /home/admin/data-management-system/tarteel/models/super_augm/output_graph.pbmm
-trie_dir: /home/anas/tarteel_ws/DS-0.6.0/data/tarteel/quran.trie
-lm_dir: /home/anas/tarteel_ws/DS-0.6.0/data/tarteel/lm.binary
+model_dir:
+trie_dir:
+lm_dir:
 lm_alpha: 0.75
 lm_beta: 1.85
 beam_width: 500
