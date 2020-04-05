@@ -8,6 +8,6 @@ python-Levenshtein==0.12.0
 PyYAML==5.3
 scikit-learn
 soundfile
-tensorflow==1.14
+tensorflow==1.15.2
 tqdm==4.43.0
 
