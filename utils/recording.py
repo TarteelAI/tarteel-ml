@@ -5,6 +5,8 @@ Author: Hamzah Khan
 
 import logging
 import os
+from pathlib import Path
+import re
 from typing import Any
 from typing import List
 from typing import Optional
@@ -124,3 +126,18 @@ def download_recording_from_url(
         logging.info('{}found in cache'.format(wav_filename))
 
     return download_filepath
+
+
+def get_surah_ayah_number_from_file(path: str) -> Tuple[int, int]:
+    p = Path(path)
+    if not p.exists():
+        raise ValueError('{} does not exist'.format(path))
+    surah_ayah_regex = re.compile(r'^([0-9]+)_([0-9]+)')
+    filename = p.stem
+    matches = surah_ayah_regex.search(filename)
+    if matches:
+        return int(matches.group(1)), int(matches.group(2))
+    raise ValueError(
+      '{} is not of the format <surah_num>_<ayah_num>_<hash>.<file_extension>'.format(filename))
+
+

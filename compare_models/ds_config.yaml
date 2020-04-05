@@ -1,0 +1,6 @@
+model_dir:
+trie_dir:
+lm_dir:
+lm_alpha: 0.75
+lm_beta: 1.85
+beam_width: 500

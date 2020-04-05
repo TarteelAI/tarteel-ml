@@ -10,12 +10,12 @@ import logging
 import os
 from typing import Any
 from typing import List
-from typing import Set
 from typing import Tuple
 from typing import Union
 import random
 import shutil
 import string
+import yaml
 
 DEFAULT_CACHE_DIRECTORY = '.cache'
 
@@ -152,3 +152,13 @@ def write_csv(csv_file: str, rows: List[Any], has_header: bool = True) -> None:
             csv_writer.writerow(rows[0])
             rows.pop(0)
         csv_writer.writerows(rows)
+
+
+def load_yaml_config(path: str) -> dict:
+    with open(path, 'r') as f:
+        return yaml.safe_load(f)
+
+
+def read_file(path: str) -> List[str]:
+    with open(path, 'r') as f:
+        return f.read().splitlines()
