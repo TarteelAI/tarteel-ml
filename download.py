@@ -1,146 +1,122 @@
 #!/usr/bin/env python3
 """
-A file for downloading audio recordings from tarteel.io.
+A file for downloading audio recordings from the Tarteel V1 dataset.
+Contributed by @kareemn.
 
-Originally created by kareemn on Jan. 1, 2019.
-https://github.com/kareemn/Tarteel-ML/blob/master/download.py
-
-Modified by Hamzah Khan (khanh111) and added to the tarteel.io/Tarteel-ML on Jan. 12, 2019.
-
-Refactored completely by Hamzah Khan (khanh111) on Aug. 03, 2019.
-
-Example command: python download.py -s 1 --use_cache
+Example usage: python download.py -s 1 --use-cache
 """
 
-import utils.audio as audio_utils
-import utils.files as file_utils
-import utils.recording as recording_utils
-
-import csv
-import requests
-
-from urllib.parse import urlparse
 from argparse import ArgumentParser
+import logging
 
-# Define argument constants.
-TARTEEL_V1_CSV_URL = "https://d2sf46268wowyo.cloudfront.net/datasets/tarteel_v1.0.csv"
-TARTEEL_LIVE_CSV_URL = "https://www.tarteel.io/download-full-dataset-csv"
-TARTEEL_V1_LABELED_CSV_URL = "https://tarteel-static.s3-us-west-2.amazonaws.com/labels/tarteel_v1.0_labeled.csv"
+import requests
+from tqdm import tqdm
 
+from utils import convert_to_bool
+import utils.files as file_utils
+from utils.recording import download_recording_from_url
 
-parser = ArgumentParser(description='Tarteel Audio Downloader')
-parser.add_argument('--csv_url', type=str, default=TARTEEL_V1_LABELED_CSV_URL)
-parser.add_argument('--local_csv_filename', type=str, default='local.csv')
-parser.add_argument('--cache_dir', type=str, default='.cache')
-parser.add_argument('-u', '--use_cache', action='store_true')
-parser.add_argument('-v', '--verbose', action='store_true')
-parser.add_argument('-s', '--surah', type=int)
-parser.add_argument('-k', '--keep_downloaded_audio', action='store_true')
-args = parser.parse_args()
-
-
-# Define constants.
+TARTEEL_V1_CSV_URL = 'https://tarteel-frontend-static.s3-us-west-2.amazonaws.com/datasets' \
+                     '/tarteel_v1.0.csv'
 DATASET_CSV_CACHE = 'csv'
 DOWNLOADED_AUDIO_CACHE = 'downloaded_audio'
 RAW_AUDIO_CACHE = 'raw_audio'
 
+parser = ArgumentParser(description='Tarteel Audio Downloader')
+parser.add_argument('--csv-url', type=str, default=TARTEEL_V1_CSV_URL)
+parser.add_argument('--local-csv-filename', type=str, default='local.csv')
+parser.add_argument('--cache-dir', type=str, default='.cache')
+parser.add_argument('-u', '--use-cache', action='store_true')
+parser.add_argument('-s', '--surah', type=int)
+parser.add_argument('-k', '--keep-downloaded-audio', action='store_true')
+parser.add_argument(
+    '--log', choices=['DEBUG', 'INFO', 'WARNING', 'CRITICAL'], default='INFO',
+    help='Logging level.'
+)
+args = parser.parse_args()
 
-def download_csv_dataset(csv_url, dataset_csv_path, verbose=False):
-    if verbose:
-        print("Downloading CSV from ", csv_url, " to ", dataset_csv_path, ".")
+numeric_level = getattr(logging, args.log, None)
+logging.basicConfig(level=numeric_level)
+
+
+def get_correctly_labeled_entries(all_entries):
+    """Get entries that are labeled and evaluated as correct."""
+    return [
+        entry for entry in all_entries if convert_to_bool(entry[9]) and convert_to_bool(entry[10])
+    ]
+
+
+def download_csv_dataset(csv_url, dataset_csv_path):
+    logging.info("Downloading CSV from ", csv_url, " to ", dataset_csv_path, ".")
     with requests.Session() as request_session:
         response = request_session.get(csv_url)
-
         decoded_dataset = response.content.decode('utf-8')
-        file = open(dataset_csv_path, "w")
-        file.write(decoded_dataset)
-        file.close()
+        with open(dataset_csv_path, "w") as file:
+            file.write(decoded_dataset)
 
 
-def convert_to_bool(str):
-    """
-    Converts string versions of true or false to bools.
-    """
-    upper_string = str.upper()
-    if upper_string == "TRUE":
-        return True
-    elif upper_string == "FALSE":
-        return False
-    else:
-        raise TypeError("Provided string is neither 'true' nor 'false'.")
-
-
-def download_entry_audio(entry, download_audio_dir, raw_audio_dir, use_cache=True, verbose=False):
-    """
-    Downloads an audio recording given its entry in a Tarteel dataset csv.
-    """
-    surah_num, ayah_num, url, _, _, _, _, _, _, _, _ = entry
+def download_entry_audio(entry, download_audio_dir, raw_audio_dir, use_cache=True):
+    """Download an audio recording given its entry in the Tarteel dataset csv."""
+    surah_num, ayah_num, url, _, _, _, _, _, _, _, _, _ = entry
 
     # Convert data to correct type from string.
     surah_num = int(surah_num)
     ayah_num = int(ayah_num)
 
     # Ensure the proper surah directory structure for the downloaded audio.
-    downloaded_ayah_audio_dir = file_utils.prepare_ayah_directory(download_audio_dir, surah_num, ayah_num)
+    downloaded_ayah_audio_dir = file_utils.prepare_ayah_directory(
+      download_audio_dir, surah_num, ayah_num)
 
     # Download and save the initially downloaded audio recording to the given path.
-    downloaded_audio_path = recording_utils.download_recording_from_url(url, downloaded_ayah_audio_dir, use_cache=use_cache, verbose=verbose)
+    download_recording_from_url(url, downloaded_ayah_audio_dir, use_cache)
 
     # Ensure the proper surah directory structure for the raw audio.
-    raw_ayah_audio_dir = file_utils.prepare_ayah_directory(raw_audio_dir, surah_num, ayah_num)
-
-    # Convert the downloaded audio to a standard raw audio format and move it to another directory.
-    # This audio is being converted to 44.1 MHz, 16bps audio (Google Speech Recognition's requirements).
-    raw_audio_path = audio_utils.convert_audio(
-        downloaded_audio_path, raw_ayah_audio_dir, use_cache=use_cache, verbose=verbose)
+    file_utils.prepare_ayah_directory(raw_audio_dir, surah_num, ayah_num)
 
 
 if __name__ == "__main__":
 
     # Parse the arguments.
     cache_directory = args.cache_dir
-    dataset_csv_url = args.csv_url
-    dataset_csv_filename = args.local_csv_filename
     use_cache = args.use_cache
-    verbose = args.verbose
     surah_to_download = args.surah
-    keep_downloaded_audio = args.keep_downloaded_audio
 
     # Prepare all requisite cache directories.
     subcache_directory_names = (DATASET_CSV_CACHE, DOWNLOADED_AUDIO_CACHE, RAW_AUDIO_CACHE)
     csv_cache_dir, downloaded_audio_dir, raw_audio_dir = file_utils.prepare_cache_directories(
                                                   subcache_directory_names,
-                                                  cache_directory=cache_directory,
-                                                  use_cache=use_cache,
-                                                  verbose=verbose)
+                                                  cache_directory,
+                                                  use_cache)
 
     # Create path to dataset csv.
-    path_to_dataset_csv = file_utils.get_path_to_dataset_csv(csv_cache_dir, dataset_csv_filename)
+    path_to_dataset_csv = file_utils.get_path_to_dataset_csv(
+      csv_cache_dir, args.local_csv_filename)
 
     # If we have decided not to use the cache, download the dataset CSV.
     if not use_cache:
-        file_utils.clean_cache_directories(cache_directory=cache_directory)
+        file_utils.clean_cache_directories(cache_directory)
 
     # If csv is not in specified location, then throw an error.
     if not file_utils.does_cached_csv_dataset_exist(path_to_dataset_csv):
-        if verbose:
-            print('Dataset CSV not found at {}. Downloading to location...'.format(path_to_dataset_csv))
-        download_csv_dataset(dataset_csv_url, path_to_dataset_csv, verbose=verbose)
+        logging.info('Dataset CSV not found at {}. Downloading to location...'.format(
+              path_to_dataset_csv))
+        download_csv_dataset(args.dataset_csv_url, path_to_dataset_csv)
     else:
-        if verbose:
-            print("Using cached copy of dataset csv at {}.".format(path_to_dataset_csv))
+        logging.info("Using cached copy of dataset csv at {}.".format(path_to_dataset_csv))
 
     # Read the rows of dataset csv.
     header_row, entries = file_utils.get_dataset_entries(path_to_dataset_csv)
 
     # Filter out recordings that have been evaluated and labeled falsely.
-    labeled_entries = [entry for entry in entries if convert_to_bool(entry[9]) and convert_to_bool(entry[10])]
+    labeled_entries = get_correctly_labeled_entries(entries)
 
     # Download the audio in the dataset.
-    for entry in labeled_entries:
-        if entry[0] == str(surah_to_download):
-            sample_rate_hz = download_entry_audio(entry, downloaded_audio_dir, raw_audio_dir, use_cache=use_cache, verbose=verbose)
+    for entry in tqdm(labeled_entries, desc='Audio Files'):
+        if surah_to_download and entry[0] == str(surah_to_download):
+            download_entry_audio(entry, downloaded_audio_dir, raw_audio_dir, use_cache)
+        else:
+            download_entry_audio(entry, downloaded_audio_dir, raw_audio_dir, use_cache)
 
     # If we don't want to keep the raw audio, remove it from the cache.
-    if not keep_downloaded_audio:
-        file_utils.delete_cache_directories(cache_directory=downloaded_audio_dir)
+    if not args.keep_downloaded_audio:
+        file_utils.delete_cache_directories(downloaded_audio_dir)
