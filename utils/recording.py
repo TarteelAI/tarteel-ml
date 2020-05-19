@@ -119,11 +119,11 @@ def download_recording_from_url(
 
     # Download audio or use cached copy
     if not os.path.exists(download_filepath) or not use_cache:
-        logging.info('Downloading {}....'.format(wav_filename))
+        logging.debug('Downloading {}...'.format(wav_filename))
         r = requests.get(url, allow_redirects=True)
         open(download_filepath, 'wb').write(r.content)
     else:
-        logging.info('{}found in cache'.format(wav_filename))
+        logging.debug('{} found in cache'.format(wav_filename))
 
     return download_filepath
 

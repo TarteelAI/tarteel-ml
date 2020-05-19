@@ -44,8 +44,7 @@ def get_dataset_entries(path_to_dataset_csv: str) -> Tuple[List, List]:
 def prepare_cache_directories(
         subdirectory_names_tuple: Tuple,
         cache_directory: str = DEFAULT_CACHE_DIRECTORY,
-        use_cache: bool = True,
-        verbose: bool = False) -> Tuple:
+        use_cache: bool = True) -> Tuple:
     """Create a set of directories to be used for caching different pieces of data."""
     # If we don't use the cache, create a common temporary cache directory.
     if not use_cache:
@@ -56,7 +55,7 @@ def prepare_cache_directories(
 
     for subdirectory_name in subdirectory_names_tuple:
         subcache_directory_path = create_cache_directory(
-            subdirectory_name, cache_directory=cache_directory, use_cache=True, verbose=verbose)
+            subdirectory_name, cache_directory=cache_directory, use_cache=True)
         subcache_directory_list.append(subcache_directory_path)
 
     return tuple(subcache_directory_list)
@@ -82,8 +81,7 @@ def create_temporary_cache_directory_name() -> str:
 def create_cache_directory(
         directory_subpath: str,
         cache_directory: str = DEFAULT_CACHE_DIRECTORY,
-        use_cache: bool = True,
-        verbose: bool = False) -> str:
+        use_cache: bool = True) -> str:
     """Create the cache directory structure for the given directory."""
     # Ensure the cache_directory always exists.
     os.makedirs(cache_directory, exist_ok=True)

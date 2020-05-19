@@ -11,7 +11,8 @@ from tqdm import tqdm
 
 from utils import files
 
-parser = argparse.ArgumentParser(description='Create a CSV file with info on all audio files in a directory.')
+parser = argparse.ArgumentParser(
+  description='Create a CSV file with info on all audio files in a directory.')
 parser.add_argument(
     '-i', '--input-directory', type=str
 )
