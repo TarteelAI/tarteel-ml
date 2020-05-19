@@ -3,15 +3,21 @@ Contains the main method used to train recitation2text models and save relevant 
 Examples of running this from the command line:
 > python3 train_recitation_to_text.py -e 50 -p 10
 """
-import tensorflow as tf
-import matplotlib.pyplot as plt
+
 from argparse import ArgumentParser
-from architectures.seq2seq import *
-from utils import *
 import os
 import time
+
+import matplotlib.pyplot as plt
+import tensorflow as tf
 import mlflow
 import mlflow.keras
+
+from training.architectures.seq2seq import lstm_encoder_decoder_with_teacher_forcing_inference
+from training.architectures.seq2seq import lstm_encoder_decoder_with_teacher_forcing_training
+from training.utils import decode_sequence
+from training.utils import get_seq2seq_data
+
 
 parser = ArgumentParser(description='Tarteel Train Sequence-Sequence Model')
 parser.add_argument('-b', '--batch_size', type=int, help="batch size for training", default=20)

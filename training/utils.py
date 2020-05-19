@@ -89,14 +89,21 @@ def shuffle_together(*arrays):
 
     # Permute the arrays and return them as a tuple.
     order = np.random.permutation(first_size)
-    return tuple([array[order] for array in arrays]])
+    return tuple([array[order] for array in arrays])
 
   
-def get_seq2seq_data(local_coefs_dir='../.outputs/mfcc', surahs=[1], n=100, return_filenames=False):
+def get_seq2seq_data(
+  local_coefs_dir='../.outputs/mfcc',
+  surahs=None,
+  n=100,
+  return_filenames=False):
     """
     Builds a dataset to be used with the sequence-to-sequence network.
     :param local_coefs_dir: a string with the path of the coefficients for prediction
     """
+
+    if surahs is None:
+        surahs = [1]
 
     def get_encoder_and_decoder_data(n=100):
         count = 0
