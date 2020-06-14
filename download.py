@@ -100,7 +100,7 @@ if __name__ == "__main__":
     if not file_utils.does_cached_csv_dataset_exist(path_to_dataset_csv):
         logging.info('Dataset CSV not found at {}. Downloading to location...'.format(
               path_to_dataset_csv))
-        download_csv_dataset(args.dataset_csv_url, path_to_dataset_csv)
+        download_csv_dataset(args.csv_url, path_to_dataset_csv)
     else:
         logging.info("Using cached copy of dataset csv at {}.".format(path_to_dataset_csv))
 
