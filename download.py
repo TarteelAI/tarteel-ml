@@ -34,7 +34,7 @@ parser.add_argument(
     help='Logging level.'
 )
 args = parser.parse_args()
-
+print(args)
 numeric_level = getattr(logging, args.log, None)
 logging.basicConfig(level=numeric_level)
 
@@ -47,7 +47,7 @@ def get_correctly_labeled_entries(all_entries):
 
 
 def download_csv_dataset(csv_url, dataset_csv_path):
-    logging.info("Downloading CSV from ", csv_url, " to ", dataset_csv_path, ".")
+    logging.info("Downloading CSV from %s to %s.", csv_url, dataset_csv_path)
     with requests.Session() as request_session:
         response = request_session.get(csv_url)
         decoded_dataset = response.content.decode('utf-8')
