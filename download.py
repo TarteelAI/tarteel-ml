@@ -34,7 +34,6 @@ parser.add_argument(
     help='Logging level.'
 )
 args = parser.parse_args()
-print(args)
 numeric_level = getattr(logging, args.log, None)
 logging.basicConfig(level=numeric_level)
 
