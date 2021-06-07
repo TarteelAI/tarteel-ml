@@ -3,7 +3,11 @@
 A file for downloading audio recordings from the Tarteel V1 dataset.
 Contributed by @kareemn.
 
-Example usage: python download.py -s 1 --use-cache
+Example usage 1: download only the audio related to surah 1 (Al-Fatiha) 140 Mb
+python download.py -s 1 --use-cache --keep-downloaded-audio
+
+Example usage 2: download the entire audio dataset
+python download.py --use-cache --keep-downloaded-audio
 """
 
 from argparse import ArgumentParser
@@ -27,7 +31,7 @@ parser.add_argument('--csv-url', type=str, default=TARTEEL_V1_CSV_URL)
 parser.add_argument('--local-csv-filename', type=str, default='local.csv')
 parser.add_argument('--cache-dir', type=str, default='.cache')
 parser.add_argument('-u', '--use-cache', action='store_true')
-parser.add_argument('-s', '--surah', type=int)
+parser.add_argument('-s', '--surah', type=int, default=0)
 parser.add_argument('-k', '--keep-downloaded-audio', action='store_true')
 parser.add_argument(
     '--log', choices=['DEBUG', 'INFO', 'WARNING', 'CRITICAL'], default='INFO',
@@ -65,7 +69,7 @@ def download_entry_audio(entry, download_audio_dir, raw_audio_dir, use_cache=Tru
 
     # Ensure the proper surah directory structure for the downloaded audio.
     downloaded_ayah_audio_dir = file_utils.prepare_ayah_directory(
-      download_audio_dir, surah_num, ayah_num)
+        download_audio_dir, surah_num, ayah_num)
 
     # Download and save the initially downloaded audio recording to the given path.
     download_recording_from_url(url, downloaded_ayah_audio_dir, use_cache)
@@ -84,13 +88,13 @@ if __name__ == "__main__":
     # Prepare all requisite cache directories.
     subcache_directory_names = (DATASET_CSV_CACHE, DOWNLOADED_AUDIO_CACHE, RAW_AUDIO_CACHE)
     csv_cache_dir, downloaded_audio_dir, raw_audio_dir = file_utils.prepare_cache_directories(
-                                                  subcache_directory_names,
-                                                  cache_directory,
-                                                  use_cache)
+        subcache_directory_names,
+        cache_directory,
+        use_cache)
 
     # Create path to dataset csv.
     path_to_dataset_csv = file_utils.get_path_to_dataset_csv(
-      csv_cache_dir, args.local_csv_filename)
+        csv_cache_dir, args.local_csv_filename)
 
     # If we have decided not to use the cache, download the dataset CSV.
     if not use_cache:
@@ -99,7 +103,7 @@ if __name__ == "__main__":
     # If csv is not in specified location, then throw an error.
     if not file_utils.does_cached_csv_dataset_exist(path_to_dataset_csv):
         logging.info('Dataset CSV not found at {}. Downloading to location...'.format(
-              path_to_dataset_csv))
+            path_to_dataset_csv))
         download_csv_dataset(args.csv_url, path_to_dataset_csv)
     else:
         logging.info("Using cached copy of dataset csv at {}.".format(path_to_dataset_csv))
@@ -112,9 +116,7 @@ if __name__ == "__main__":
 
     # Download the audio in the dataset.
     for entry in tqdm(labeled_entries, desc='Audio Files'):
-        if surah_to_download and entry[0] == str(surah_to_download):
-            download_entry_audio(entry, downloaded_audio_dir, raw_audio_dir, use_cache)
-        else:
+        if surah_to_download == 0 or entry[0] == str(surah_to_download):
             download_entry_audio(entry, downloaded_audio_dir, raw_audio_dir, use_cache)
 
     # If we don't want to keep the raw audio, remove it from the cache.
