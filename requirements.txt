@@ -6,7 +6,7 @@ numpy==1.18.2
 pandas==0.25.3
 pydub==0.23.1
 python-Levenshtein==0.12.0
-PyYAML==5.3
+PyYAML==5.4
 requests
 scikit-learn
 soundfile
