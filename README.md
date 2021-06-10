@@ -1,4 +1,8 @@
-# Tarteel Machine Learning 
+
+[![Platform: windows](https://img.shields.io/badge/Platform-Linux|MacOS-lightgrey)]()
+[![Python Version](https://img.shields.io/badge/python-v3.6-blue)]()
+
+# Tarteel Machine Learning
 
 This repo is designed to house code related to Tarteel machine learning related tasks. :microscope:
 
@@ -17,7 +21,7 @@ If you found this repo helpful, please keep it's contributors in your duaa :rais
 
 ## Getting Started :beginner:
 
-### Prerequisites 
+### Prerequisites
 
 We use Python 3.7 for our development.
 However, any Python above 3.6 should work.
