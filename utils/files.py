@@ -103,7 +103,7 @@ def clean_cache_directories(cache_directory: str = DEFAULT_CACHE_DIRECTORY) -> N
     # If the cache directory doesn't exist, then just make an empty one.
     if not os.path.isdir(cache_directory):
         os.makedirs(cache_directory)
-        
+
     for subdirectory in os.listdir(cache_directory):
         logging.info("Removing cache_subdirectory {}.".format(subdirectory))
         shutil.rmtree(os.path.join(cache_directory, subdirectory))
